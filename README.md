@@ -1,7 +1,7 @@
-<center>
+<div align="center">
 <img src="./images/logo.png" alt="Logo - hack the crous" width="200"/>
 <a href="https://hackthecrous.com">Eat smart & hack the CR🍩US</a>
-</center>
+</div>
 
 ---
 
