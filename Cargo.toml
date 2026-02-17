@@ -1,0 +1,11 @@
+[workspace]
+resolver = "3"
+members = ["api", "cli", "core", "scraper"]
+
+[workspace.package]
+edition="2024"
+version = "5.1.0"
+authors = ["courtcircuits <radulescutristan@proton.me>"]
+license = "Apache-2.0"
+
+[workspace.dependencies]
