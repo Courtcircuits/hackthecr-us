@@ -1,5 +1,6 @@
 <div align="center">
 <img src="./images/logo.png" alt="Logo - hack the crous" width="200"/>
+</br>
 <a href="https://hackthecrous.com">Eat smart & hack the CR🍩US</a>
 </div>
 
