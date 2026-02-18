@@ -1,0 +1,123 @@
+---
+source: scraper/src/restaurant_list.rs
+expression: result
+---
+Ok(
+    [
+        RestaurantData {
+            name: "Dijon • Brasserie la Cantine",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/brasserie-la-cantine/",
+        },
+        RestaurantData {
+            name: "Belfort • Café, etc.",
+            city: "Belfort",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafe-etc/",
+        },
+        RestaurantData {
+            name: "Besançon • Café International",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafe-international/",
+        },
+        RestaurantData {
+            name: "Dijon • Cafet’ STAPS",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafet-des-sports/",
+        },
+        RestaurantData {
+            name: "Dijon • Cafet’ Droit-Lettres",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafet-droit-lettres/",
+        },
+        RestaurantData {
+            name: "Dijon • Cafet’ Gabriel",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafet-gabriel/",
+        },
+        RestaurantData {
+            name: "Dijon • Cafet’ IUT",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafet-iut/",
+        },
+        RestaurantData {
+            name: "Dijon • Cafet’ Mansart",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cafet-mansart/",
+        },
+        RestaurantData {
+            name: "Dijon • Crous’ty Truck • Centre-ville &amp; Campus",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/crousty-truck/",
+        },
+        RestaurantData {
+            name: "Dijon • Crous Truck’ • Centre-ville",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/foodtruck-pizzas-2/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ L’Arsenal",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/larsenal/",
+        },
+        RestaurantData {
+            name: "Belfort • Resto U’ &amp; Cafet’ Duvillard",
+            city: "Belfort",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-cafet-duvillard/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ Hauts du Chazal",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-cafet-hauts-du-chazal/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ Lumière",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-cafet-lumiere/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ Petit Bouloie",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-cafet-petit-bouloie/",
+        },
+        RestaurantData {
+            name: "Montbéliard • Resto U’ &amp; Cafet’ Portes du Jura",
+            city: "Montbéliard",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-cafet-portes-du-jura/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ Canot",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-canot/",
+        },
+        RestaurantData {
+            name: "Vesoul • Resto U’",
+            city: "Vesoul",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-de-vesoul/",
+        },
+        RestaurantData {
+            name: "Le Creusot • Resto U’",
+            city: "Le Creusot",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-du-creusot/",
+        },
+        RestaurantData {
+            name: "Dijon • Resto U’ Mansart",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-mansart/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ Mégevand",
+            city: "Besançon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-megevand/",
+        },
+        RestaurantData {
+            name: "Dijon • Resto U’ Montmuzard",
+            city: "Dijon",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-montmuzard/",
+        },
+        RestaurantData {
+            name: "Sévenans • Resto U’",
+            city: "Sévenans",
+            crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-sevenans/",
+        },
+    ],
+)

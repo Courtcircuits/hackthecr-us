@@ -1,0 +1,190 @@
+---
+source: scraper/src/restaurant_page.rs
+expression: result
+---
+Ok(
+    RestaurantPageData {
+        menus: [
+            MenuData {
+                date: "Menu du mercredi 18 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du jeudi 19 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du vendredi 20 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du lundi 23 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du mardi 24 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du mercredi 25 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du jeudi 26 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du vendredi 27 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du lundi 2 mars 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            MenuData {
+                date: "Menu du mardi 3 mars 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Laitage et fruits",
+                                dishes: [
+                                    "Fromage",
+                                    "Assortiment de fruits",
+                                    "Assortiment de yaourts",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+)

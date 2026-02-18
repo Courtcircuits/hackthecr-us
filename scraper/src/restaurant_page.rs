@@ -141,4 +141,12 @@ mod tests {
         let result = RestaurantPageScraper::parse(&document);
         insta::assert_debug_snapshot!(result);
     }
+
+    #[test]
+    fn test_restaurant_page_scraper_sevenans() {
+        let html = include_str!("stubs/sevenans.html");
+        let document = Html::parse_document(html);
+        let result = RestaurantPageScraper::parse(&document);
+        insta::assert_debug_snapshot!(result);
+    }
 }

@@ -94,4 +94,12 @@ mod tests {
         insta::assert_debug_snapshot!(result);
 
     }
+
+    #[tokio::test]
+    async fn test_restaurant_list_scraper_bfc() {
+        let scraper = RestaurantListScraper::new("./src/stubs/ou-manger-bfc.html".to_string());
+        let result = scraper.scrape().await;
+
+        insta::assert_debug_snapshot!(result);
+    }
 }
