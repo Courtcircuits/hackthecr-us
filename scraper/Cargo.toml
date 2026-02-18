@@ -4,3 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+reqwest = { version = "0.12.5", features = ["native-tls-vendored"] }
+scraper = "0.25.0"
+tokio.workspace = true
+
+[dev-dependencies]
+mockall = "0.13.1"
+insta = { version = "1.43.2", features = ["yaml"] }

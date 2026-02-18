@@ -1,0 +1,143 @@
+---
+source: scraper/src/restaurant_list.rs
+expression: result
+---
+Ok(
+    [
+        RestaurantData {
+            name: "Brasserie 1000 Pâtes",
+            city: "Narbonne",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-1000-pates/",
+        },
+        RestaurantData {
+            name: "Brasserie Boutonnet",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-boutonnet/",
+        },
+        RestaurantData {
+            name: "Brasserie Triolet",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-triolet/",
+        },
+        RestaurantData {
+            name: "Cafet’ Aquarium",
+            city: "Perpignan",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-aquarium/",
+        },
+        RestaurantData {
+            name: "Cafet’ Boutonnet",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-boutonnet/",
+        },
+        RestaurantData {
+            name: "Cafet’ BU",
+            city: "Perpignan",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-bu/",
+        },
+        RestaurantData {
+            name: "Cafet’ Caférium",
+            city: "Nîmes",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-caferium/",
+        },
+        RestaurantData {
+            name: "Cafet’ Campus",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-campus/",
+        },
+        RestaurantData {
+            name: "Cafet’ Carmes",
+            city: "Nîmes",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-carmes/",
+        },
+        RestaurantData {
+            name: "Cafet’ Chimie",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-chimie/",
+        },
+        RestaurantData {
+            name: "Cafet’ Droit",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-droit/",
+        },
+        RestaurantData {
+            name: "Cafet’ FDE",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-fde/",
+        },
+        RestaurantData {
+            name: "Cafet’ Hoche",
+            city: "Nîmes",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-hoche/",
+        },
+        RestaurantData {
+            name: "Cafet’ Médecine",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-medecine/",
+        },
+        RestaurantData {
+            name: "Cafet’ Parenthèse",
+            city: "Nîmes",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-parenthese/",
+        },
+        RestaurantData {
+            name: "Cafet’ Passerelle",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-passerelle/",
+        },
+        RestaurantData {
+            name: "Cafet’ Paul Valéry",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-paul-valery-um3/",
+        },
+        RestaurantData {
+            name: "Cafet’ Richter",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-richter/",
+        },
+        RestaurantData {
+            name: "Cafet’ (S)PACE",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-space/",
+        },
+        RestaurantData {
+            name: "Cafet’ St Charles",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-st-charles/",
+        },
+        RestaurantData {
+            name: "Cafet’ Staps",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-staps/",
+        },
+        RestaurantData {
+            name: "Cafet’ Trioletto",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-trioletto/",
+        },
+        RestaurantData {
+            name: "Resto U’ Perpignan",
+            city: "Perpignan",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-perpignan/",
+        },
+        RestaurantData {
+            name: "Resto U’ Richter",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-richter/",
+        },
+        RestaurantData {
+            name: "Resto U’ St Césaire",
+            city: "Nîmes",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-st-cesaire/",
+        },
+        RestaurantData {
+            name: "Resto U’ Triolet",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-triolet/",
+        },
+        RestaurantData {
+            name: "Resto U’ Vert-Bois",
+            city: "Montpellier",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-vert-bois/",
+        },
+    ],
+)

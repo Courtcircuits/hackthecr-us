@@ -9,3 +9,4 @@ authors = ["courtcircuits <radulescutristan@proton.me>"]
 license = "Apache-2.0"
 
 [workspace.dependencies]
+tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros"] }
