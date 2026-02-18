@@ -10,6 +10,8 @@ pub struct RestaurantPageScraper {
 #[derive(Debug)]
 pub struct RestaurantPageData {
     pub menus: Vec<MenuData>,
+    pub hours: String,
+    pub coordinates: (f64, f64),
 }
 
 #[derive(Debug)]
@@ -64,6 +66,20 @@ impl RestaurantPageScraper {
         let dish_selector = Selector::parse("ul > li").map_err(|_| {
             RestaurantPageScraperError::ParsingFailed("Couldn't parse dish selector".to_string())
         })?;
+        let info_selector = Selector::parse("section.infos div.info").map_err(|_| {
+            RestaurantPageScraperError::ParsingFailed("Couldn't parse info selector".to_string())
+        })?;
+        let info_title_selector = Selector::parse("div.info_title").map_err(|_| {
+            RestaurantPageScraperError::ParsingFailed(
+                "Couldn't parse info_title selector".to_string(),
+            )
+        })?;
+        let info_p_selector = Selector::parse("p").map_err(|_| {
+            RestaurantPageScraperError::ParsingFailed("Couldn't parse info p selector".to_string())
+        })?;
+        let map_selector = Selector::parse("div#map").map_err(|_| {
+            RestaurantPageScraperError::ParsingFailed("Couldn't parse map selector".to_string())
+        })?;
 
         let mut menus = Vec::new();
 
@@ -114,7 +130,44 @@ impl RestaurantPageScraper {
             }
         }
 
-        Ok(RestaurantPageData { menus })
+        let hours = document.select(&info_selector).find_map(|info_el| {
+            let title = info_el
+                .select(&info_title_selector)
+                .next()
+                .map(|e| e.text().collect::<String>())?;
+            if title.contains("Horaires") {
+                info_el
+                    .select(&info_p_selector)
+                    .next()
+                    .map(|p| p.text().collect::<String>().trim().to_string())
+            } else {
+                None
+            }
+        });
+
+        let coordinates = document.select(&map_selector).next().and_then(|map_el| {
+            let lat = map_el.value().attr("data-lat")?.parse::<f64>().ok()?;
+            let lon = map_el.value().attr("data-lon")?.parse::<f64>().ok()?;
+            Some((lat, lon))
+        });
+
+        let Some(hours) = hours else {
+            return Err(RestaurantPageScraperError::ParsingFailed(
+                "Couldn't find hours".to_string(),
+            ));
+        };
+
+        let Some(coordinates) = coordinates else {
+            return Err(RestaurantPageScraperError::ParsingFailed(
+                "Couldn't find coordinates".to_string(),
+            ));
+        };
+
+        Ok(RestaurantPageData {
+            menus,
+            hours,
+            coordinates,
+        })
     }
 }
 

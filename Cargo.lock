@@ -167,6 +167,7 @@ name = "core"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "scraper 0.1.0",
  "sqlx",
 ]
 

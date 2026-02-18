@@ -28,5 +28,14 @@ Ok(
                 ],
             },
         ],
+        hours: Some(
+            "du lundi au vendredi de 11h15 à 14h",
+        ),
+        coordinates: Some(
+            (
+                43.631014,
+                3.860346,
+            ),
+        ),
     },
 )
