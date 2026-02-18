@@ -88,7 +88,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_restaurant_list_scraper() {
-        let scraper = RestaurantListScraper::new("http://example.com".to_string());
+        let scraper = RestaurantListScraper::new("./src/stubs/ou-manger.html".to_string());
         let result = scraper.scrape().await;
 
         insta::assert_debug_snapshot!(result);

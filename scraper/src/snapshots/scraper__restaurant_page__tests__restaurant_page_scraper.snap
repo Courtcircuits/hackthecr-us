@@ -1,0 +1,32 @@
+---
+source: scraper/src/restaurant_page.rs
+expression: result
+---
+Ok(
+    RestaurantPageData {
+        menus: [
+            MenuData {
+                date: "Menu du mercredi 18 février 2026",
+                meals: [
+                    MealData {
+                        title: "Déjeuner",
+                        categories: [
+                            FoodCategory {
+                                name: "Brasserie",
+                                dishes: [
+                                    "Millefeuille niçois",
+                                    "(plat complet végétarien)",
+                                    "Ou",
+                                    "Filet de merlu à l’échalote",
+                                    "Frite",
+                                    "Pommes de terre vapeur",
+                                    "Fondue de poireaux",
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+)

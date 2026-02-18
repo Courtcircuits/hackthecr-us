@@ -17,8 +17,10 @@ pub async fn get(url: &str) -> Result<scraper::Html, ScraperError> {
 
 #[cfg(test)]
 pub async fn get(_url: &str) -> Result<scraper::Html, ScraperError> {
-    let html = include_str!("stubs/ou-manger.html");
-    Ok(scraper::Html::parse_document(html))
+    use std::fs;
+
+    let html = fs::read_to_string(_url).map_err(|_| ScraperError::RequestFailed)?;
+    Ok(scraper::Html::parse_document(&html))
 }
 
 pub trait Scraper<T> {

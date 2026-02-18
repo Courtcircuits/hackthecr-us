@@ -1726,6 +1726,9 @@ dependencies = [
  "mockall",
  "reqwest",
  "scraper 0.25.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "tokio",
 ]
 
