@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS meals(
 		meal_id UUID PRIMARY KEY,
 		meal_type TEXT NOT NULL,
 		foodies	TEXT,
+		date VARCHAR(500),
 		scraped_at TIMESTAMP DEFAULT NOW(),
 		restaurant_id UUID NOT NULL REFERENCES restaurants(restaurant_id)
 );
