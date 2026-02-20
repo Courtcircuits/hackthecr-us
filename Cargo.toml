@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["api", "cli", "core", "scraper"]
+members = ["api", "cli", "core", "macros", "scraper"]
 
 [workspace.package]
 edition="2024"
