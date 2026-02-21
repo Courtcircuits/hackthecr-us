@@ -34,7 +34,7 @@ pub fn generate_crous_data(input: TokenStream) -> TokenStream {
         .keys()
         .map(|k| {
             let ident = syn::Ident::new(&k.to_lowercase(), Span::call_site());
-            quote! { pub #ident: String }
+            quote! { pub #ident: CrousUrl }
         })
         .collect();
 
@@ -45,10 +45,12 @@ pub fn generate_crous_data(input: TokenStream) -> TokenStream {
             let ident = syn::Ident::new(&k.to_lowercase(), Span::call_site());
             let key = k.as_str();
             quote! {
-                #ident: json[#key]
-                    .as_str()
-                    .expect(concat!("crous.json: key \"", #key, "\" is missing or not a string"))
-                    .to_string()
+                #ident: CrousUrl(
+                    json[#key]
+                        .as_str()
+                        .expect(concat!("crous.json: key \"", #key, "\" is missing or not a string"))
+                        .to_string()
+                )
             }
         })
         .collect();
@@ -57,6 +59,21 @@ pub fn generate_crous_data(input: TokenStream) -> TokenStream {
     let path_str = full_path.to_string_lossy().to_string();
 
     quote! {
+        pub struct CrousUrl(pub String);
+
+        impl CrousUrl {
+            pub fn to_list_url(&self) -> String {
+                format!("{}se-restaurer/ou-manger/", self.0)
+            }
+        }
+
+        impl ::std::ops::Deref for CrousUrl {
+            type Target = str;
+            fn deref(&self) -> &str {
+                &self.0
+            }
+        }
+
         pub struct CrousData {
             #(#fields),*
         }

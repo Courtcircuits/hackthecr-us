@@ -1,4 +1,5 @@
 use scraper::Selector;
+use thiserror::Error;
 
 use crate::Scraper;
 
@@ -7,16 +8,18 @@ pub struct RestaurantListScraper {
     url: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RestaurantData {
     pub name: String,
     pub city: String,
     pub crous_url: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum RestaurantListScraperError {
+    #[error("Failed to perform HTTP request")]
     RequestFailed,
+    #[error("Failed to parse HTML: {0}")]
     ParsingFailed(String),
 }
 

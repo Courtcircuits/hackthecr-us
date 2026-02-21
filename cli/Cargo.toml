@@ -9,3 +9,5 @@ core = { path = "../core" }
 macros = { path = "../macros" }
 scraper = { path = "../scraper" }
 serde_json = "1"
+tabled = "0.20.0"
+tokio.workspace = true

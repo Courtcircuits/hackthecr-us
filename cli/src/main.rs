@@ -2,7 +2,7 @@ use std::path::{PathBuf};
 
 use clap::{Parser, Subcommand};
 
-use crate::crous::get_urls;
+use crate::{actions::restaurants::{RestaurantsAction, RestaurantsActionResult}, crous::get_urls};
 
 
 pub mod actions;
@@ -42,6 +42,34 @@ pub enum Command {
     }
 }
 
-fn main() {
-    let res = get_urls();
+#[tokio::main]
+async fn main() {
+    let args = Crousctl::parse();
+
+    match args.command {
+        Command::Status => {
+            println!("Crousctl is running and ready to execute commands.");
+        }
+        Command::Restaurants { target, dry_run } => {
+            let action = RestaurantsAction::new(target, dry_run);
+            let result = action.execute().await;
+            match result {
+                RestaurantsActionResult::Success => {
+                    println!("Successfully collected and stored restaurant data.");
+                }
+                RestaurantsActionResult::Failure(error) => {
+                    eprintln!("Failed to collect restaurant data: {}", error);
+                }
+            }
+        }
+        Command::Meals { target, dry_run } => {
+            println!("Meals command is not implemented yet. Target: {}, Dry run: {}", target, dry_run);
+        }
+        Command::Schools { target, dry_run } => {
+            println!("Schools command is not implemented yet. Target: {}, Dry run: {}", target, dry_run);
+        }
+        Command::Schedule { config } => {
+            println!("Schedule command is not implemented yet. Config path: {:?}", config);
+        }
+    }   
 }
