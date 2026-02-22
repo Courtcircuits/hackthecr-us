@@ -15,6 +15,7 @@ impl Into<Restaurant> for RestaurantScrapedData {
             restaurant_id: uuid::uuid!("00000000-0000-0000-0000-000000000000"),
             name: self.description.name,
             url: self.description.crous_url,
+            city: Some(self.description.city),
             coordinates: Some(format!("{},{}", latitude, longitude)),
             opening_hours: Some(self.page.hours),
             created_at: None,
@@ -70,6 +71,7 @@ mod tests {
         let restaurant: Restaurant = scraped.into();
         assert_eq!(restaurant.name, "Test Restaurant");
         assert_eq!(restaurant.url, "https://example.com/restaurant");
+        assert_eq!(restaurant.city, Some("Strasbourg".to_string()));
         assert_eq!(restaurant.coordinates, Some("48.5734,7.7521".to_string()));
         assert_eq!(restaurant.opening_hours, Some("12:00 - 14:00".to_string()));
     }

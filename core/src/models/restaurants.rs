@@ -9,6 +9,7 @@ pub struct Restaurant {
     pub restaurant_id: Uuid,
     pub name: String,
     pub url: String,
+    pub city: Option<String>,
     pub coordinates: Option<String>,
     pub opening_hours: Option<String>,
     pub created_at: Option<NaiveDateTime>,
@@ -29,10 +30,11 @@ pub trait RestaurantModel {
 impl RestaurantModel for PgPool {
     async fn create_restaurant(&self, restaurant: Restaurant) -> Result<(), RestaurantModelError> {
         sqlx::query!(
-            "INSERT INTO restaurants (restaurant_id, name, url, coordinates, opening_hours) VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO restaurants (restaurant_id, name, url, city, coordinates, opening_hours) VALUES ($1, $2, $3, $4, $5, $6)",
             restaurant.restaurant_id,
             restaurant.name,
             restaurant.url,
+            restaurant.city,
             restaurant.coordinates,
             restaurant.opening_hours
         )
@@ -45,7 +47,7 @@ impl RestaurantModel for PgPool {
 
     async fn get_restaurant_by_name(&self, name: String) -> Result<Restaurant, RestaurantModelError> {
         let row = sqlx::query!(
-            "SELECT restaurant_id, name, url, coordinates, opening_hours, created_at, updated_at FROM restaurants WHERE name = $1",
+            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at FROM restaurants WHERE name = $1",
             name
         )
         .fetch_optional(self)
@@ -57,6 +59,7 @@ impl RestaurantModel for PgPool {
             restaurant_id: row.restaurant_id,
             name: row.name,
             url: row.url,
+            city: row.city,
             coordinates: row.coordinates,
             opening_hours: row.opening_hours,
             created_at: row.created_at,
@@ -66,7 +69,7 @@ impl RestaurantModel for PgPool {
 
     async fn get_all_restaurants(&self) -> Result<Vec<Restaurant>, RestaurantModelError> {
         let rows = sqlx::query!(
-            "SELECT restaurant_id, name, url, coordinates, opening_hours, created_at, updated_at FROM restaurants"
+            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at FROM restaurants"
         )
         .fetch_all(self)
         .await
@@ -78,6 +81,7 @@ impl RestaurantModel for PgPool {
                 restaurant_id: row.restaurant_id,
                 name: row.name,
                 url: row.url,
+                city: row.city,
                 coordinates: row.coordinates,
                 opening_hours: row.opening_hours,
                 created_at: row.created_at,

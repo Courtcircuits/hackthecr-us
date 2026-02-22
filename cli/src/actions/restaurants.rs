@@ -66,8 +66,9 @@ impl RestaurantsAction {
                     let table_data = restaurants.iter().map(|restaurant| {
                         let restaurant: Restaurant = restaurant.clone();
                         DisplayableRestaurant {
-                            name: restaurant.name.clone(),
-                            url: restaurant.url.clone(),
+                            name: restaurant.name,
+                            url: restaurant.url,
+                            city: restaurant.city.unwrap_or_else(|| "N/A".to_string()),
                             coordinates: restaurant.coordinates.unwrap_or_else(|| "N/A".to_string()),
                             opening_hours: restaurant.opening_hours.unwrap_or_else(|| "N/A".to_string()),
                         }
@@ -93,6 +94,7 @@ impl RestaurantsAction {
 pub struct DisplayableRestaurant {
     pub name: String,
     pub url: String,
+    pub city: String,
     pub coordinates: String,
     pub opening_hours: String,
 }

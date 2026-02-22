@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS restaurants(
 		restaurant_id UUID PRIMARY KEY,
 		name VARCHAR(400) NOT NULL,
 		url TEXT NOT NULL,
+		city VARCHAR(200),
 		coordinates VARCHAR(20),
 		opening_hours VARCHAR(100),
 		created_at TIMESTAMP DEFAULT NOW(),
