@@ -3,6 +3,7 @@ use std::future::Future;
 use chrono::NaiveDateTime;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
+use thiserror::Error;
 
 #[derive(Clone)]
 pub struct Restaurant {
@@ -16,8 +17,11 @@ pub struct Restaurant {
     pub updated_at: Option<NaiveDateTime>,
 }
 
+#[derive(Error, Debug)]
 pub enum RestaurantModelError {
+    #[error("Restaurant not found")]
     NotFound,
+    #[error("Database error: {0}")]
     DatabaseError(String),
 }
 

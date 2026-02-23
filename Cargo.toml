@@ -10,3 +10,5 @@ license = "Apache-2.0"
 
 [workspace.dependencies]
 tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros"] }
+sqlx = { version = "0.8.6", features = ["uuid", "postgres", "runtime-tokio", "chrono"] }
+thiserror = "2.0.18"

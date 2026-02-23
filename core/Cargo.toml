@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-sqlx = { version = "0.8.6", features = ["uuid", "postgres", "runtime-tokio", "chrono"] }
 chrono = "0.4"
+sqlx.workspace = true
+thiserror.workspace = true
 scraper = { path = "../scraper" }
-thiserror = "2.0.18"
