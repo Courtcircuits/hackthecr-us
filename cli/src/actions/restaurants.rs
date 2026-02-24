@@ -1,13 +1,12 @@
-use core::{
-    models::restaurants::{Restaurant, RestaurantModel},
+use thiserror::Error;
+use htc_core::{
+    models::restaurants::{Restaurant},
     sources::restaurants::RestaurantScrapedData,
 };
-use std::sync::Arc;
 
 use scraper::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
-use thiserror::Error;
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
@@ -20,11 +19,9 @@ pub struct RestaurantsAction {
     pub dry_run: bool,
 }
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum RestaurantsActionResult {
-    #[thiserror::error("RestaurantsAction completed successfully")]
-    Success,
-    #[thiserror::error("RestaurantsAction failed: {0}")]
+    #[error("RestaurantsAction failed: {0}")]
     Failure(String),
 }
 
@@ -75,7 +72,7 @@ impl RestaurantsAction {
         Ok(restaurants)
     }
 
-    pub async fn execute(&self) -> Result<RestaurantsActionResult, RestaurantsActionResult> {
+    pub async fn execute(&self) -> Result<(), RestaurantsActionResult> {
         let restaurants = self.collect().await.map_err(|e| {
             RestaurantsActionResult::Failure(format!("Failed to collect restaurant data: {:?}", e))
         })?;
@@ -98,14 +95,14 @@ impl RestaurantsAction {
             table.with(Style::modern());
             table.modify(Columns::first(), Alignment::right());
             println!("{}", table);
-            Ok(RestaurantsActionResult::Success)
+            Ok(())
         } else {
             // Here you would normally save the restaurants to a database
             // For this example, we'll just print them out
             for restaurant in &restaurants {
                 let restaurant: Restaurant = restaurant.clone();
             }
-            Ok(RestaurantsActionResult::Success)
+            Ok(())
         }
     }
 }

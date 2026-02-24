@@ -4,3 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+axum = "0.8.8"
+dotenv = { version = "0.15.0", features = ["clap"] }
+utoipa = "5.4.0"
+utoipa-scalar = { version = "0.3.0", features = ["axum"] }
+tower-http = { version = "0.6.8", features = ["cors", "trace"] }
+htc_core = { package = "core", path = "../core" }
+sqlx.workspace = true
+clap.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+serde_json.workspace = true

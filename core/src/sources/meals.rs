@@ -49,6 +49,7 @@ mod tests {
             coordinates: None,
             opening_hours: None,
             created_at: None,
+            city: None,
             updated_at: None,
         }
     }

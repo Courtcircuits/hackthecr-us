@@ -6,5 +6,7 @@ edition = "2024"
 [dependencies]
 chrono = "0.4"
 sqlx.workspace = true
+utoipa.workspace = true
+utoipa-scalar.workspace = true
 thiserror.workspace = true
 scraper = { path = "../scraper" }

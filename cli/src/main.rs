@@ -2,7 +2,7 @@ use std::path::{PathBuf};
 
 use clap::{Parser, Subcommand};
 
-use crate::{actions::restaurants::{RestaurantsAction, RestaurantsActionResult}, crous::get_urls};
+use crate::actions::restaurants::RestaurantsAction;
 
 
 pub mod actions;
@@ -52,13 +52,12 @@ async fn main() {
         }
         Command::Restaurants { target, dry_run } => {
             let action = RestaurantsAction::new(target, dry_run);
-            let result = action.execute().await;
-            match result {
-                RestaurantsActionResult::Success => {
+            match action.execute().await {
+                Ok(()) => {
                     println!("Successfully collected and stored restaurant data.");
                 }
-                RestaurantsActionResult::Failure(error) => {
-                    eprintln!("Failed to collect restaurant data: {}", error);
+                Err(e) => {
+                    eprintln!("Failed to collect restaurant data: {}", e);
                 }
             }
         }
