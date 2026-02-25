@@ -2,11 +2,12 @@ use std::path::{PathBuf};
 
 use clap::{Parser, Subcommand};
 
-use crate::actions::restaurants::RestaurantsAction;
+use crate::{actions::restaurants::RestaurantsAction, crous::CrousRegion};
 
 
 pub mod actions;
 pub mod crous;
+pub mod client;
 
 #[derive(Parser, Debug)]
 #[clap(name = "crousctl", version, about = "crousctl controls the HackTheCrous scraping orchestra")]
@@ -20,7 +21,7 @@ pub enum Command {
     Status,
     Restaurants {
         #[clap(long, short = 't')]
-        target: String,
+        target: CrousRegion,
         #[clap(long, short = 'd')]
         dry_run: bool,
     },

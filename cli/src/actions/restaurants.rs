@@ -12,10 +12,10 @@ use tabled::{
     settings::{Alignment, Style, object::Columns},
 };
 
-use crate::crous;
+use crate::crous::{self, CrousRegion, CrousUrl};
 
 pub struct RestaurantsAction {
-    pub target: String,
+    pub target: CrousRegion,
     pub dry_run: bool,
 }
 
@@ -26,7 +26,7 @@ pub enum RestaurantsActionResult {
 }
 
 impl RestaurantsAction {
-    pub fn new(target: String, dry_run: bool) -> Self {
+    pub fn new(target: CrousRegion, dry_run: bool) -> Self {
         Self {
             target,
             dry_run,
@@ -34,14 +34,14 @@ impl RestaurantsAction {
     }
 
     pub async fn collect(&self) -> Result<Vec<Restaurant>, RestaurantsActionResult> {
-        let urls = crous::get_urls();
+        let url = CrousUrl(self.target.url().to_string()).to_list_url();
 
         let mut restaurants: Vec<Restaurant> = Vec::new();
         println!(
             "Collecting restaurant data from {}...",
-            urls.montpellier.to_list_url()
+            url
         );
-        let list_data = RestaurantListScraper::new(urls.montpellier.to_list_url())
+        let list_data = RestaurantListScraper::new(url.to_string())
             .scrape()
             .await
             .map_err(|e| {

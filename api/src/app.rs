@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use htc_core::models::restaurants::{Restaurant, RestaurantModelError};
 
-use crate::{config::Config, restaurants::service::RestaurantsServices};
+use crate::{config::Config, restaurants::service::{RestaurantsServiceImpl, RestaurantsServices}};
 
 pub trait App{
     fn config(&self) -> &Config;
@@ -10,6 +10,8 @@ pub trait App{
     fn get_restaurant_by_name(&self, name: String) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
     fn save_restaurants(&self, restaurants: Vec<Restaurant>) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
 }
+
+pub type DefaultApp = AppImpl<RestaurantsServiceImpl>;
 
 #[derive(Clone)]
 pub struct AppImpl<R> 

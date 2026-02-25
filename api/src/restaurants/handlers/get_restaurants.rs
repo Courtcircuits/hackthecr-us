@@ -1,6 +1,10 @@
-use axum::{extract::State, http::Response};
+use axum::{Json, extract::State};
 
-use crate::{app::App, error::ApiError, restaurants::RestaurantSchema};
+use crate::{
+    app::App,
+    error::ApiError,
+    restaurants::RestaurantSchema,
+};
 
 #[utoipa::path(
     get,
@@ -11,17 +15,19 @@ use crate::{app::App, error::ApiError, restaurants::RestaurantSchema};
         (status = 500, description = "Internal server error")
     )
 )]
-pub async fn get_restaurants<A>
-(
+pub async fn get_restaurants<A>(
     State(state): State<A>,
-    ) -> Result<Response<Vec<RestaurantSchema>>, ApiError> 
-where A: App + Send + Sync + Clone
+) -> Result<Json<Vec<RestaurantSchema>>, ApiError> 
+where 
+    A: App + Send + Sync + Clone
 {
-    let restaurants = state.get_restaurants().await.map_err(|e| ApiError::InternalServerError(e.to_string()))?;
-    Ok(Response::builder()
-        .status(200)
-        .header("Content-Type", "application/json")
-        .body(restaurants.into_iter().map(RestaurantSchema::from).collect())
-        .unwrap())
-
+    let restaurants = state
+        .get_restaurants()
+        .await
+        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+    let restaurants: Vec<RestaurantSchema> = restaurants
+        .into_iter()
+        .map(RestaurantSchema::from)
+        .collect();
+    Ok(Json(restaurants))
 }
