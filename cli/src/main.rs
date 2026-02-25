@@ -2,7 +2,7 @@ use std::path::{PathBuf};
 
 use clap::{Parser, Subcommand};
 
-use crate::{actions::restaurants::RestaurantsAction, crous::CrousRegion};
+use crate::{actions::restaurants::RestaurantsAction, client::HTCClient, crous::CrousRegion};
 
 
 pub mod actions;
@@ -13,7 +13,9 @@ pub mod client;
 #[clap(name = "crousctl", version, about = "crousctl controls the HackTheCrous scraping orchestra")]
 struct Crousctl {
     #[clap(subcommand)]
-    pub command: Command
+    pub command: Command,
+    #[clap(long, short = 'a')]
+    pub api: String
 }
 
 #[derive(Debug, Subcommand, PartialEq, Eq, Hash)]
@@ -47,12 +49,14 @@ pub enum Command {
 async fn main() {
     let args = Crousctl::parse();
 
+    let client = HTCClient::new(args.api);
+
     match args.command {
         Command::Status => {
             println!("Crousctl is running and ready to execute commands.");
         }
         Command::Restaurants { target, dry_run } => {
-            let action = RestaurantsAction::new(target, dry_run);
+            let action = RestaurantsAction::new(target, dry_run, client);
             match action.execute().await {
                 Ok(()) => {
                     println!("Successfully collected and stored restaurant data.");

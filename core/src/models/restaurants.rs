@@ -1,9 +1,46 @@
 use std::future::Future;
 
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 use thiserror::Error;
+use utoipa::ToSchema;
+
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
+pub struct RestaurantSchema {
+    pub name: String,
+    pub url: String,
+    pub city: Option<String>,
+    pub coordinates: Option<String>,
+    pub opening_hours: Option<String>,
+}
+
+impl From<Restaurant> for RestaurantSchema {
+    fn from(restaurant: Restaurant) -> Self {
+        RestaurantSchema {
+            name: restaurant.name,
+            url: restaurant.url,
+            city: restaurant.city,
+            coordinates: restaurant.coordinates,
+            opening_hours: restaurant.opening_hours,
+        }
+    }
+}
+
+
+impl From<&Restaurant> for RestaurantSchema {
+    fn from(restaurant: &Restaurant) -> Self {
+        RestaurantSchema {
+            name: restaurant.name.clone(),
+            url: restaurant.url.clone(),
+            city: restaurant.city.clone(),
+            coordinates: restaurant.coordinates.clone(),
+            opening_hours: restaurant.opening_hours.clone()
+        }
+    }
+}
+
 
 #[derive(Clone)]
 pub struct Restaurant {
@@ -26,9 +63,17 @@ pub enum RestaurantModelError {
 }
 
 pub trait RestaurantModel {
-    fn create_restaurant(&self, restaurant: Restaurant) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
-    fn get_restaurant_by_name(&self, name: String) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
-    fn get_all_restaurants(&self) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
+    fn create_restaurant(
+        &self,
+        restaurant: Restaurant,
+    ) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
+    fn get_restaurant_by_name(
+        &self,
+        name: String,
+    ) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
+    fn get_all_restaurants(
+        &self,
+    ) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
 }
 
 impl RestaurantModel for PgPool {
@@ -49,7 +94,10 @@ impl RestaurantModel for PgPool {
         Ok(())
     }
 
-    async fn get_restaurant_by_name(&self, name: String) -> Result<Restaurant, RestaurantModelError> {
+    async fn get_restaurant_by_name(
+        &self,
+        name: String,
+    ) -> Result<Restaurant, RestaurantModelError> {
         let row = sqlx::query!(
             "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at FROM restaurants WHERE name = $1",
             name

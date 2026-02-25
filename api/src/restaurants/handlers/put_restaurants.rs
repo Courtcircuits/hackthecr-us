@@ -1,11 +1,11 @@
 use axum::{Json, extract::State, http::StatusCode};
+use tracing::error;
 use uuid::Uuid;
-use htc_core::models::restaurants::Restaurant;
+use htc_core::models::restaurants::{Restaurant, RestaurantSchema};
 
 use crate::{
     app::App,
     error::ApiError,
-    restaurants::RestaurantSchema,
 };
 
 #[utoipa::path(
@@ -41,7 +41,10 @@ where
     state
         .save_restaurants(restaurants)
         .await
-        .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
+        .map_err(|e| {
+            error!("{}", e.to_string());
+            ApiError::InternalServerError(e.to_string())
+        })?;
     Ok(StatusCode::CREATED)
 }
 

@@ -8,7 +8,7 @@ htc_core = { package = "core", path = "../core" }
 macros = { path = "../macros" }
 scraper = { path = "../scraper" }
 tabled = "0.20.0"
-reqwest = { version = "0.12.5", features = ["native-tls-vendored"] }
+reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }
 tokio.workspace = true
 thiserror.workspace = true
 clap.workspace = true

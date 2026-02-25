@@ -12,11 +12,14 @@ use tabled::{
     settings::{Alignment, Style, object::Columns},
 };
 
-use crate::crous::{self, CrousRegion, CrousUrl};
+use crate::{client::HTCClient, crous::{self, CrousRegion, CrousUrl}};
 
 pub struct RestaurantsAction {
     pub target: CrousRegion,
     pub dry_run: bool,
+    
+
+    pub client: HTCClient
 }
 
 #[derive(Debug, Error)]
@@ -26,10 +29,11 @@ pub enum RestaurantsActionResult {
 }
 
 impl RestaurantsAction {
-    pub fn new(target: CrousRegion, dry_run: bool) -> Self {
+    pub fn new(target: CrousRegion, dry_run: bool, client: HTCClient) -> Self {
         Self {
             target,
             dry_run,
+            client
         }
     }
 
@@ -99,9 +103,7 @@ impl RestaurantsAction {
         } else {
             // Here you would normally save the restaurants to a database
             // For this example, we'll just print them out
-            for restaurant in &restaurants {
-                let restaurant: Restaurant = restaurant.clone();
-            }
+            self.client.put_restaurants(restaurants).await;
             Ok(())
         }
     }

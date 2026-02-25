@@ -1,9 +1,9 @@
 use axum::{Json, extract::State};
+use htc_core::models::restaurants::RestaurantSchema;
 
 use crate::{
     app::App,
     error::ApiError,
-    restaurants::RestaurantSchema,
 };
 
 #[utoipa::path(
@@ -27,7 +27,7 @@ where
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
     let restaurants: Vec<RestaurantSchema> = restaurants
         .into_iter()
-        .map(RestaurantSchema::from)
+        .map(&RestaurantSchema::from)
         .collect();
     Ok(Json(restaurants))
 }

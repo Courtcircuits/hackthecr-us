@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS restaurants(
 		name VARCHAR(400) NOT NULL,
 		url TEXT NOT NULL,
 		city VARCHAR(200),
-		coordinates VARCHAR(20),
-		opening_hours VARCHAR(100),
+		coordinates VARCHAR(100),
+		opening_hours VARCHAR(400),
 		created_at TIMESTAMP DEFAULT NOW(),
 		updated_at TIMESTAMP
 );
