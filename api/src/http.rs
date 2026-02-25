@@ -6,6 +6,7 @@ use axum::{
 };
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
+use tracing::info;
 
 use crate::{config::Config, error::ApiError};
 
@@ -13,6 +14,8 @@ pub async fn serve(app: Router, config: Arc<Config>) -> Result<(), ApiError> {
     let listener = TcpListener::bind(format!("0.0.0.0:{}", config.port))
         .await
         .map_err(|e| ApiError::InternalServerError(format!("Failed to bind to port {}: {}", config.port, e)))?;
+
+    info!("Starting server on 0.0.0.0:{}", config.port);
     axum::serve(listener, app)
         .await
         .map_err(|e| ApiError::InternalServerError(format!("Server error: {}", e)))?;

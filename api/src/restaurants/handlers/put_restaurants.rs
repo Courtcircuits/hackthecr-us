@@ -12,7 +12,7 @@ use crate::{
     put,
     path = "/restaurants",
     tag = "Restaurants",
-    request_body = Vec<RestaurantSchema>,
+    request_body = RestaurantSchema,
     responses(
         (status = 201, description = "Restaurants created"),
         (status = 500, description = "Internal server error")
@@ -43,4 +43,18 @@ where
         .await
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
     Ok(StatusCode::CREATED)
+}
+
+#[utoipa::path(
+    get,
+    path = "/health",
+    tag = "healthcheck",
+    responses(
+        (status = 200, description = "Health check successful", body = String),
+        (status = 500, description = "Internal server error", body = ApiError)
+    )
+)]
+pub async fn get_healthcheck_handler(
+) -> Result<String, ApiError> {
+    Ok("Test".to_string())
 }

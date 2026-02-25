@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use tracing::error;
 
 use clap::Parser as _;
 
@@ -15,6 +16,7 @@ pub mod router;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
     dotenv::dotenv().ok();
 
     let config = Config::parse();
@@ -27,13 +29,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = AppImpl::new(restaurants_service, config.clone());
     let root = root(app).await.map_err(|e| {
-        eprintln!("Failed to create router: {}", e);
+        error!("Failed to create router: {}", e);
         e
     })?;
 
     let _ = crate::http::serve(root, config)
         .await
-        .inspect_err(|e| eprintln!("{}", e));
+        .inspect_err(|e| error!("{}", e));
 
     Ok(())
 }
