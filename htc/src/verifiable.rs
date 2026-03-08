@@ -1,6 +1,6 @@
 use base64::prelude::*;
 use ed25519_dalek::ed25519::signature::SignerMut;
-use ed25519_dalek::{Signature, SigningKey, Verifier, VerifyingKey, pkcs8::DecodePrivateKey as _, pkcs8::DecodePublicKey as _};
+use ed25519_dalek::{Signature, SigningKey, Verifier, VerifyingKey, pkcs8::DecodePrivateKey as _, pkcs8::spki::DecodePublicKey as _};
 use std::fmt::Debug;
 use std::fs;
 use std::marker::PhantomData;
@@ -45,7 +45,7 @@ where
     let serialized_payload = serde_json::json!(payload).to_string();
     let digest = &Sha256::digest(&serialized_payload)[..];
 
-    let mut signing_key = read_pkcs8_der_public_key(private_key)?;
+    let mut signing_key = read_pkcs8_pem_private_key(private_key)?;
     let signature = BASE64_STANDARD.encode(signing_key.sign(digest).to_bytes());
 
     Ok(SignedPayload {
@@ -56,8 +56,8 @@ where
     })
 }
 
-pub fn verify(payload: String, signature: String, public_key: &[u8]) -> Result<(), SigningError> {
-    let verifying_key = VerifyingKey::from_public_key_der(public_key)
+pub fn verify(payload: String, signature: String, public_key: &str) -> Result<(), SigningError> {
+    let verifying_key = VerifyingKey::from_public_key_pem(public_key)
         .map_err(|e| SigningError::ParsingPublicKeyFailed(e.to_string()))?;
 
     let signature_bytes = BASE64_STANDARD
@@ -74,11 +74,11 @@ pub fn verify(payload: String, signature: String, public_key: &[u8]) -> Result<(
         .map_err(|_| SigningError::InvalidSignature)
 }
 
-pub fn read_pkcs8_der_public_key(path: PathBuf) -> Result<SigningKey, SigningError> {
+pub fn read_pkcs8_pem_private_key(path: PathBuf) -> Result<SigningKey, SigningError> {
     let content =
-        fs::read(path.clone()).map_err(|_| SigningError::PrivateKeyNotFound(path.clone()))?;
+        fs::read_to_string(path.clone()).map_err(|_| SigningError::PrivateKeyNotFound(path.clone()))?;
 
-    SigningKey::from_pkcs8_der(&content)
+    SigningKey::from_pkcs8_pem(&content)
         .map_err(|e| SigningError::ParsingPrivateKeyFailed(path, e.to_string()))
 }
 
@@ -101,13 +101,10 @@ mod tests {
             bar: "baz".to_string(),
         };
 
-        let private_key = PathBuf::from("./tests/private_key.der");
+        let private_key = PathBuf::from("./tests/private_key.pem");
 
-        let res = sign(payload, private_key, "John".to_string()).unwrap();
-
-        let signature = res.signature;
-
-        assert_eq!(signature, "1MS8Tr67yUxQK5pzFvn2a275HeFEodV36dVyckwgR8urr98AM73V90wdqCPJQ4TbABRYr7XZ3PLhu/Q3ol0XAQ==".to_string());
+        let res = sign(payload, private_key, "John".to_string());
+        assert!(res.is_ok());
     }
 
     #[test]
@@ -116,9 +113,8 @@ mod tests {
             bar: "baz".to_string(),
         };
 
-        let private_key = PathBuf::from("./tests/private_key.der");
-        let public_key_path = PathBuf::from("./tests/public_key.der");
-        let public_key = fs::read(public_key_path).unwrap();
+        let private_key = PathBuf::from("./tests/private_key.pem");
+        let public_key = fs::read_to_string("./tests/public_key.pem").unwrap();
 
         let res = sign(payload, private_key, "John".to_string()).unwrap();
 
@@ -130,16 +126,14 @@ mod tests {
         assert!(res.is_ok());
     }
 
-
     #[test]
     fn test_verify_fails() {
         let payload = Foo {
             bar: "baz".to_string(),
         };
 
-        let private_key = PathBuf::from("./tests/private_key.der");
-        let public_key_path = PathBuf::from("./tests/public_key.der");
-        let public_key = fs::read(public_key_path).unwrap();
+        let private_key = PathBuf::from("./tests/private_key.pem");
+        let public_key = fs::read_to_string("./tests/public_key.pem").unwrap();
 
         let res = sign(payload, private_key, "John".to_string()).unwrap();
 

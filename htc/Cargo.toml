@@ -12,6 +12,6 @@ utoipa.workspace = true
 utoipa-scalar.workspace = true
 thiserror.workspace = true
 scraper = { path = "../scraper" }
-ed25519-dalek = { version = "2.2.0", features = ["pkcs8"] }
+ed25519-dalek = { version = "2.2.0", features = ["pkcs8", "pem"] }
 sha2 = "0.10.9"
 base64 = "0.22.1"
