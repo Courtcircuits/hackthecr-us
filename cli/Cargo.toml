@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-htc_core = { package = "core", path = "../core" }
+htc = { package = "htc", path = "../htc" }
 macros = { path = "../macros" }
 scraper = { path = "../scraper" }
 tabled = "0.20.0"

@@ -1,5 +1,5 @@
 use axum::{Json, extract::State};
-use htc_core::models::restaurants::RestaurantSchema;
+use htc::models::restaurants::RestaurantSchema;
 
 use crate::{
     app::App,

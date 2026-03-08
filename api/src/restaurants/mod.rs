@@ -1,4 +1,4 @@
-use htc_core::models::restaurants::Restaurant;
+use htc::models::restaurants::Restaurant;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 

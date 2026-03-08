@@ -1,4 +1,4 @@
-use htc_core::models::restaurants::{Restaurant, RestaurantSchema};
+use htc::models::restaurants::{Restaurant, RestaurantSchema};
 use reqwest::Client;
 
 

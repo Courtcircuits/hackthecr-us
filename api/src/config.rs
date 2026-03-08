@@ -10,6 +10,6 @@ pub struct Config {
     pub origins: Vec<String>,
 
     #[clap(env, long, help = "Database URL")]
-    pub database_url: String
+    pub database_url: String,
 }
 

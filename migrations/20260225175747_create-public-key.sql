@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS admins(
+		admin_id UUID PRIMARY KEY,
+		ssh_key TEXT NOT NULL,
+		name TEXT NOT NULL UNIQUE
+);

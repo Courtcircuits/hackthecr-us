@@ -1,5 +1,5 @@
 use thiserror::Error;
-use htc_core::{
+use htc::{
     models::restaurants::{Restaurant},
     sources::restaurants::RestaurantScrapedData,
 };

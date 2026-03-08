@@ -13,6 +13,8 @@ pub mod error;
 pub mod http;
 pub mod restaurants;
 pub mod router;
+pub mod admins;
+pub mod ssh;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

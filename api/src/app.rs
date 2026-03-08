@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use htc_core::models::restaurants::{Restaurant, RestaurantModelError};
+use htc::models::restaurants::{Restaurant, RestaurantModelError};
 
 use crate::{config::Config, restaurants::service::{RestaurantsServiceImpl, RestaurantsServices}};
 

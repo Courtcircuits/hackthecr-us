@@ -1,7 +1,7 @@
 use axum::{Json, extract::State, http::StatusCode};
 use tracing::error;
 use uuid::Uuid;
-use htc_core::models::restaurants::{Restaurant, RestaurantSchema};
+use htc::models::restaurants::{Restaurant, RestaurantSchema};
 
 use crate::{
     app::App,

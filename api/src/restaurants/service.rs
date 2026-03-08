@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use htc_core::models::restaurants::{Restaurant, RestaurantModel as _, RestaurantModelError};
+use htc::models::restaurants::{Restaurant, RestaurantModel as _, RestaurantModelError};
 use sqlx::PgPool;
 
 pub trait RestaurantsServices {

@@ -1,13 +1,17 @@
 [package]
-name = "core"
+name = "htc"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 chrono = "0.4"
 serde.workspace = true
+serde_json.workspace = true
 sqlx.workspace = true
 utoipa.workspace = true
 utoipa-scalar.workspace = true
 thiserror.workspace = true
 scraper = { path = "../scraper" }
+ed25519-dalek = { version = "2.2.0", features = ["pkcs8"] }
+sha2 = "0.10.9"
+base64 = "0.22.1"
