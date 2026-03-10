@@ -11,13 +11,14 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(bound = "T: Serialize + DeserializeOwned")]
 pub struct SignedPayload<T>
 where
     T: Serialize + DeserializeOwned + Debug,
 {
-    payload: String,
-    author: String,
-    signature: String,
+    pub payload: T,
+    pub author: String,
+    pub signature: String,
     #[serde(skip)]
     _marker: PhantomData<T>,
 }
@@ -32,6 +33,21 @@ pub enum SigningError {
     InvalidSignature,
     #[error("Couldn't parse public key : {0}")]
     ParsingPublicKeyFailed(String),
+}
+
+impl <T> SignedPayload<T>
+where
+    T: Serialize + DeserializeOwned + Debug + Clone
+{
+    pub fn sign(payload: T, private_key: PathBuf, author: &str) -> Result<SignedPayload<T>, SigningError> {
+        crate::verifiable::sign(payload, private_key, author.to_string())
+    }
+
+    pub fn verify(&self, public_key: &str) -> Result<&T, SigningError> {
+        let serialized_payload = serde_json::json!(self.payload).to_string();
+        verify(serialized_payload, &self.signature, public_key)?;
+        Ok(&self.payload)
+    }
 }
 
 pub fn sign<T>(
@@ -49,19 +65,19 @@ where
     let signature = BASE64_STANDARD.encode(signing_key.sign(digest).to_bytes());
 
     Ok(SignedPayload {
-        payload: serialized_payload,
+        payload,
         author,
         signature,
         _marker: PhantomData,
     })
 }
 
-pub fn verify(payload: String, signature: String, public_key: &str) -> Result<(), SigningError> {
+pub fn verify(payload: String, signature: &str, public_key: &str) -> Result<(), SigningError> {
     let verifying_key = VerifyingKey::from_public_key_pem(public_key)
         .map_err(|e| SigningError::ParsingPublicKeyFailed(e.to_string()))?;
 
     let signature_bytes = BASE64_STANDARD
-        .decode(&signature)
+        .decode(signature)
         .map_err(|_| SigningError::InvalidSignature)?;
 
     let signature = Signature::from_slice(&signature_bytes)
@@ -122,7 +138,7 @@ mod tests {
             bar: "baz".to_string(),
         }).to_string();
 
-        let res = verify(serialized_payload, res.signature, &public_key);
+        let res = verify(serialized_payload, &res.signature, &public_key);
         assert!(res.is_ok());
     }
 
@@ -141,7 +157,7 @@ mod tests {
             bar: "boz".to_string(),
         }).to_string();
 
-        let res = verify(serialized_payload, res.signature, &public_key);
+        let res = verify(serialized_payload, &res.signature, &public_key);
         assert!(res.is_err());
     }
 }

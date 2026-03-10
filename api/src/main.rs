@@ -4,7 +4,11 @@ use tracing::error;
 use clap::Parser as _;
 
 use crate::{
-    app::AppImpl, config::Config, restaurants::service::RestaurantsServiceImpl, router::root,
+    admins::service::AdminServiceImpl,
+    app::AppImpl,
+    config::Config,
+    restaurants::service::RestaurantsServiceImpl,
+    router::root,
 };
 
 pub mod app;
@@ -14,7 +18,6 @@ pub mod http;
 pub mod restaurants;
 pub mod router;
 pub mod admins;
-pub mod ssh;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -28,8 +31,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = Arc::new(pool);
 
     let restaurants_service = RestaurantsServiceImpl::new(pool.clone());
+    let admin_service = AdminServiceImpl::new(pool.clone());
 
-    let app = AppImpl::new(restaurants_service, config.clone());
+    let app = AppImpl::new(restaurants_service, admin_service, config.clone());
     let root = root(app).await.map_err(|e| {
         error!("Failed to create router: {}", e);
         e

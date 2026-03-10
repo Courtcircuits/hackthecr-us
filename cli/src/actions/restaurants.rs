@@ -103,7 +103,7 @@ impl RestaurantsAction {
         } else {
             // Here you would normally save the restaurants to a database
             // For this example, we'll just print them out
-            self.client.put_restaurants(restaurants).await;
+            let _ = self.client.put_restaurants(restaurants).await;
             Ok(())
         }
     }

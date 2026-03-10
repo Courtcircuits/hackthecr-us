@@ -2,6 +2,7 @@ use axum::{Json, extract::State, http::StatusCode};
 use tracing::error;
 use uuid::Uuid;
 use htc::models::restaurants::{Restaurant, RestaurantSchema};
+use htc::verifiable::SignedPayload;
 
 use crate::{
     app::App,
@@ -20,20 +21,23 @@ use crate::{
 )]
 pub async fn put_restaurant<A>(
     State(state): State<A>,
-    Json(body): Json<Vec<RestaurantSchema>>,
+    Json(body): Json<SignedPayload<Vec<RestaurantSchema>>>,
 ) -> Result<StatusCode, ApiError>
 where
     A: App + Send + Sync + Clone
 {
-    let restaurants: Vec<Restaurant> = body
-        .into_iter()
+    let user_key = state.get_public_key(&body.author).await.map_err(|_| ApiError::Unauthorized("".to_string()))?;
+    let payload = body.verify(&user_key).map_err(|e| ApiError::Unauthorized(e.to_string()))?;
+
+    let restaurants: Vec<Restaurant> = payload
+        .iter()
         .map(|schema| Restaurant {
             restaurant_id: Uuid::new_v4(),
-            name: schema.name,
-            url: schema.url,
-            city: schema.city,
-            coordinates: schema.coordinates,
-            opening_hours: schema.opening_hours,
+            name: schema.name.clone(),
+            url: schema.url.clone(),
+            city: schema.city.clone(),
+            coordinates: schema.coordinates.clone(),
+            opening_hours: schema.opening_hours.clone(),
             created_at: None,
             updated_at: None,
         })

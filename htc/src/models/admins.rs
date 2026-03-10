@@ -2,9 +2,9 @@ use sqlx::{PgPool, types::Uuid};
 use thiserror::Error;
 
 pub struct Admin {
-    admin_id: Uuid,
-    name: String,
-    ssh_key: String,
+    pub admin_id: Uuid,
+    pub name: String,
+    pub ssh_key: String,
 }
 
 #[derive(Debug, Error)]

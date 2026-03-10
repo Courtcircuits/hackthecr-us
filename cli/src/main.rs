@@ -8,14 +8,15 @@ use crate::{actions::restaurants::RestaurantsAction, client::HTCClient, crous::C
 pub mod actions;
 pub mod crous;
 pub mod client;
+pub mod config;
 
 #[derive(Parser, Debug)]
 #[clap(name = "crousctl", version, about = "crousctl controls the HackTheCrous scraping orchestra")]
 struct Crousctl {
     #[clap(subcommand)]
     pub command: Command,
-    #[clap(long, short = 'a')]
-    pub api: String
+    #[clap(long, short='c', default_value="~/.htcconfig")]
+    pub config: PathBuf
 }
 
 #[derive(Debug, Subcommand, PartialEq, Eq, Hash)]
@@ -40,8 +41,6 @@ pub enum Command {
         dry_run: bool,
     },
     Schedule {
-        #[clap(long, short = 'c')]
-        config: PathBuf
     }
 }
 
