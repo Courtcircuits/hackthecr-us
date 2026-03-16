@@ -1,5 +1,6 @@
 use axum::Router;
-use tower_http::trace::TraceLayer;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tracing::Level;
 use utoipa::OpenApi;
 use utoipa_scalar::{Scalar, Servable};
 
@@ -32,5 +33,9 @@ where
         .merge(Scalar::with_url("/docs", openapi))
         .merge(restaurants_router(app))
         .layer(default_cors_layer(&origins)?)
-        .layer(TraceLayer::new_for_http()))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        ))
 }

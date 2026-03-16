@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use htc::{
     models::restaurants::{Restaurant, RestaurantSchema},
     verifiable::SignedPayload,
@@ -45,6 +43,8 @@ impl HTCClient {
             &self.author,
         )
         .map_err(|e| RestaurantClientError::PayloadSigningFailed(e.to_string()))?;
+
+        println!("{:?}", payload);
 
         let response = client
             .put(format!("{}/restaurants", self.url))

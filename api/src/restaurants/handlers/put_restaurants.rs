@@ -13,7 +13,7 @@ use crate::{
     put,
     path = "/restaurants",
     tag = "Restaurants",
-    request_body = RestaurantSchema,
+    request_body = SignedPayload<Vec<RestaurantSchema>>,
     responses(
         (status = 201, description = "Restaurants created"),
         (status = 500, description = "Internal server error")
@@ -26,8 +26,14 @@ pub async fn put_restaurant<A>(
 where
     A: App + Send + Sync + Clone
 {
-    let user_key = state.get_public_key(&body.author).await.map_err(|_| ApiError::Unauthorized("".to_string()))?;
-    let payload = body.verify(&user_key).map_err(|e| ApiError::Unauthorized(e.to_string()))?;
+    let user_key = state.get_public_key(&body.author).await.map_err(|e| {
+        error!("{}", e.to_string());
+        ApiError::Unauthorized(e.to_string())
+    })?;
+    let payload = body.verify(&user_key).map_err(|e| {
+        error!("{}", e.to_string());
+        ApiError::Unauthorized(e.to_string())
+    })?;
 
     let restaurants: Vec<Restaurant> = payload
         .iter()
