@@ -17,3 +17,4 @@ thiserror = "2.0.18"
 clap = { version = "4.5.59", features = ["derive", "env"] }
 utoipa = "5.4.0"
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
+base64 = "0.22.1"

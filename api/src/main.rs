@@ -1,10 +1,10 @@
 use std::sync::Arc;
-use tracing::error;
+use tracing::{error, info};
 
 use clap::Parser as _;
 
 use crate::{
-    admins::service::AdminServiceImpl,
+    admins::service::{AdminService, AdminServiceImpl},
     app::AppImpl,
     config::Config,
     restaurants::service::RestaurantsServiceImpl,
@@ -32,6 +32,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let restaurants_service = RestaurantsServiceImpl::new(pool.clone());
     let admin_service = AdminServiceImpl::new(pool.clone());
+    let key = config.admin_public_key.clone();
+
+    if !key.is_empty() {
+        info!("Default key found");
+        let _ = admin_service.create_default_admin_key(&key).await.map_err(|e| {
+            tracing::error!("{}", e.to_string());
+        });
+        info!("Default admin key inserted");
+    }else {
+        info!("No default key found");
+    }
+
+
 
     let app = AppImpl::new(restaurants_service, admin_service, config.clone());
     let root = root(app).await.map_err(|e| {

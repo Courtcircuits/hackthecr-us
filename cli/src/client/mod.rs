@@ -9,7 +9,7 @@ use reqwest::Client;
 pub struct HTCClient {
     pub url: String,
     pub client: Client,
-    pub private_key: PathBuf,
+    pub private_key: String,
     pub author: String,
 }
 
@@ -22,7 +22,7 @@ pub enum RestaurantClientError {
 }
 
 impl HTCClient {
-    pub fn new(url: String, private_key: PathBuf, author: String) -> Self {
+    pub fn new(url: String, private_key: String, author: String) -> Self {
         println!("Saving in {}", url);
         HTCClient {
             url,
@@ -41,7 +41,7 @@ impl HTCClient {
         let restaurants: Vec<RestaurantSchema> = restaurants.iter().map(|r| r.into()).collect();
         let payload = SignedPayload::<Vec<RestaurantSchema>>::sign(
             restaurants,
-            self.private_key.clone(),
+            &self.private_key,
             &self.author,
         )
         .map_err(|e| RestaurantClientError::PayloadSigningFailed(e.to_string()))?;

@@ -1,22 +1,27 @@
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 
-use crate::{actions::restaurants::RestaurantsAction, client::HTCClient, crous::CrousRegion};
-
+use crate::{
+    actions::restaurants::RestaurantsAction, client::HTCClient, config::Config, crous::CrousRegion,
+};
 
 pub mod actions;
-pub mod crous;
 pub mod client;
 pub mod config;
+pub mod crous;
 
 #[derive(Parser, Debug)]
-#[clap(name = "crousctl", version, about = "crousctl controls the HackTheCrous scraping orchestra")]
+#[clap(
+    name = "crousctl",
+    version,
+    about = "crousctl controls the HackTheCrous scraping orchestra"
+)]
 struct Crousctl {
     #[clap(subcommand)]
     pub command: Command,
-    #[clap(long, short='c', default_value="~/.htcconfig")]
-    pub config: PathBuf
+    #[clap(long, short = 'c')]
+    pub config: Option<PathBuf>,
 }
 
 #[derive(Debug, Subcommand, PartialEq, Eq, Hash)]
@@ -40,15 +45,49 @@ pub enum Command {
         #[clap(long, short = 'd')]
         dry_run: bool,
     },
-    Schedule {
-    }
+    Schedule {},
+    Generate {
+        #[clap(long, short = 'u')]
+        user: String,
+        #[clap(long, short = 'd')]
+        dry_run: bool,
+    },
 }
 
 #[tokio::main]
 async fn main() {
     let args = Crousctl::parse();
 
-    let client = HTCClient::new(args.api);
+    let config_path = args.config.unwrap_or_else(|| {
+        let home = std::env::var("HOME").expect("HOME env var not set");
+        PathBuf::from(home).join(".config/htc.yml")
+    });
+
+    let Ok(config) = Config::from(&config_path) else {
+        match args.command {
+            Command::Generate { user, dry_run } => {
+                let new_config = Config::generate(&user).expect("Couldn't generate config");
+                if dry_run {
+                    println!("{}", new_config.as_yaml().expect("Couldn't generate yaml"));
+                } else {
+                    new_config
+                        .write(&config_path)
+                        .expect("Couldn't write config");
+                    println!(
+                        "Configuration wrote at : {}",
+                        config_path.to_str().unwrap()
+                    );
+                }
+                return;
+            }
+            _ => {
+                eprintln!("Config not found");
+                panic!("Config not found");
+            }
+        }
+    };
+
+    let client = HTCClient::new(config.server, config.client_key_data, config.user);
 
     match args.command {
         Command::Status => {
@@ -66,13 +105,20 @@ async fn main() {
             }
         }
         Command::Meals { target, dry_run } => {
-            println!("Meals command is not implemented yet. Target: {}, Dry run: {}", target, dry_run);
+            println!(
+                "Meals command is not implemented yet. Target: {}, Dry run: {}",
+                target, dry_run
+            );
         }
         Command::Schools { target, dry_run } => {
-            println!("Schools command is not implemented yet. Target: {}, Dry run: {}", target, dry_run);
+            println!(
+                "Schools command is not implemented yet. Target: {}, Dry run: {}",
+                target, dry_run
+            );
         }
-        Command::Schedule { config } => {
-            println!("Schedule command is not implemented yet. Config path: {:?}", config);
+        Command::Schedule {} => {
+            todo!("Implement scheduling")
         }
-    }   
+        Command::Generate { user, dry_run } => {}
+    }
 }
