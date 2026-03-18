@@ -8,6 +8,10 @@ use crate::{
     app::App,
     error::ApiError,
     http::default_cors_layer,
+    meals::{
+        handlers::get_meals::__path_get_meals, handlers::put_meals::__path_put_meals,
+        router::meals_router,
+    },
     restaurants::{
         handlers::{
             get_restaurants::__path_get_restaurants, put_restaurants::__path_put_restaurant,
@@ -19,7 +23,7 @@ use crate::{
 #[derive(OpenApi)]
 #[openapi(
     info(title = "Hack The Crous API"),
-    paths(put_restaurant, get_restaurants)
+    paths(put_restaurant, get_restaurants, put_meals, get_meals)
 )]
 pub struct ApiDoc;
 
@@ -31,7 +35,8 @@ where
     let openapi = ApiDoc::openapi();
     Ok(Router::new()
         .merge(Scalar::with_url("/docs", openapi))
-        .merge(restaurants_router(app))
+        .merge(restaurants_router(app.clone()))
+        .merge(meals_router(app))
         .layer(default_cors_layer(&origins)?)
         .layer(
             TraceLayer::new_for_http()

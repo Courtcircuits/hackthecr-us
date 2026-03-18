@@ -37,7 +37,7 @@ pub enum ConfigError<'a> {
 }
 
 impl Config {
-    pub fn from(path: &PathBuf) -> Result<Self, ConfigError> {
+    pub fn from(path: &PathBuf) -> Result<Self, ConfigError<'_>> {
         let config = std::fs::read_to_string(path).map_err(|_| ConfigError::NotFound(path))?;
         if config.is_empty() {
             return Err(ConfigError::EmptyFile);
@@ -66,13 +66,13 @@ impl Config {
         })
     }
 
-    pub fn write(&self, path: &PathBuf) -> Result<(), ConfigError> {
+    pub fn write(&self, path: &PathBuf) -> Result<(), ConfigError<'_>> {
         std::fs::write(path, self.as_yaml()?).map_err(|e| {
             ConfigError::WriteUnable(path.to_string_lossy().to_string(), e.to_string())
         })
     }
 
-    pub fn as_yaml(&self) -> Result<String, ConfigError> {
+    pub fn as_yaml(&self) -> Result<String, ConfigError<'_>> {
         let yaml =
             serde_yaml::to_string(self).map_err(|e| ConfigError::InvalidYAML(e.to_string()))?;
 

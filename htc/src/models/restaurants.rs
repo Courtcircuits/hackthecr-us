@@ -2,15 +2,14 @@ use std::future::Future;
 
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
-use sqlx::types::Uuid;
+use sqlx::{types::Uuid, PgPool};
 use thiserror::Error;
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
 pub struct RestaurantSchema {
     // optional because of put requests
-    pub id: Option<String>,
+    pub id: String,
     pub name: String,
     pub url: String,
     pub city: Option<String>,
@@ -21,7 +20,7 @@ pub struct RestaurantSchema {
 impl From<Restaurant> for RestaurantSchema {
     fn from(restaurant: Restaurant) -> Self {
         RestaurantSchema {
-            id: Some(restaurant.restaurant_id.to_string()),
+            id: restaurant.restaurant_id,
             name: restaurant.name,
             url: restaurant.url,
             city: restaurant.city,
@@ -35,7 +34,7 @@ impl From<Restaurant> for RestaurantSchema {
 impl From<&Restaurant> for RestaurantSchema {
     fn from(restaurant: &Restaurant) -> Self {
         RestaurantSchema {
-            id: Some(restaurant.restaurant_id.to_string()),
+            id: restaurant.restaurant_id.clone(),
             name: restaurant.name.clone(),
             url: restaurant.url.clone(),
             city: restaurant.city.clone(),
@@ -48,7 +47,7 @@ impl From<&Restaurant> for RestaurantSchema {
 
 #[derive(Clone)]
 pub struct Restaurant {
-    pub restaurant_id: Uuid,
+    pub restaurant_id: String,
     pub name: String,
     pub url: String,
     pub city: Option<String>,
@@ -56,6 +55,7 @@ pub struct Restaurant {
     pub opening_hours: Option<String>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
+    pub batch_id: Uuid
 }
 
 #[derive(Error, Debug)]
@@ -71,25 +71,27 @@ pub trait RestaurantModel {
         &self,
         restaurant: Restaurant,
     ) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
-    fn get_restaurant_by_name(
+    fn get_restaurant_by_id(
         &self,
-        name: String,
+        id: String,
     ) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
-    fn get_all_restaurants(
+    fn get_all_restaurants_batch(
         &self,
+        batch: Uuid
     ) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
 }
 
 impl RestaurantModel for PgPool {
     async fn create_restaurant(&self, restaurant: Restaurant) -> Result<(), RestaurantModelError> {
         sqlx::query!(
-            "INSERT INTO restaurants (restaurant_id, name, url, city, coordinates, opening_hours) VALUES ($1, $2, $3, $4, $5, $6)",
+            "INSERT INTO restaurants (restaurant_id, name, url, city, coordinates, opening_hours, batch_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             restaurant.restaurant_id,
             restaurant.name,
             restaurant.url,
             restaurant.city,
             restaurant.coordinates,
-            restaurant.opening_hours
+            restaurant.opening_hours,
+            restaurant.batch_id
         )
         .execute(self)
         .await
@@ -98,13 +100,13 @@ impl RestaurantModel for PgPool {
         Ok(())
     }
 
-    async fn get_restaurant_by_name(
+    async fn get_restaurant_by_id(
         &self,
-        name: String,
+        id: String,
     ) -> Result<Restaurant, RestaurantModelError> {
         let row = sqlx::query!(
-            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at FROM restaurants WHERE name = $1",
-            name
+            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at, batch_id FROM restaurants WHERE restaurant_id = $1",
+            id
         )
         .fetch_optional(self)
         .await
@@ -120,12 +122,14 @@ impl RestaurantModel for PgPool {
             opening_hours: row.opening_hours,
             created_at: row.created_at,
             updated_at: row.updated_at,
+            batch_id: row.batch_id
         })
     }
 
-    async fn get_all_restaurants(&self) -> Result<Vec<Restaurant>, RestaurantModelError> {
+    async fn get_all_restaurants_batch(&self, batch_id: Uuid) -> Result<Vec<Restaurant>, RestaurantModelError> {
         let rows = sqlx::query!(
-            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at FROM restaurants"
+            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at, batch_id FROM restaurants WHERE batch_id = $1",
+            batch_id
         )
         .fetch_all(self)
         .await
@@ -142,6 +146,7 @@ impl RestaurantModel for PgPool {
                 opening_hours: row.opening_hours,
                 created_at: row.created_at,
                 updated_at: row.updated_at,
+                batch_id: row.batch_id
             })
             .collect();
 

@@ -31,8 +31,8 @@ impl From<AdminErrors> for AdminError {
 }
 
 pub trait AdminService {
-    fn get_public_key(&self, name: &str)
-    -> impl Future<Output = Result<String, AdminError>> + Send;
+    fn get_admin(&self, name: &str)
+    -> impl Future<Output = Result<Admin, AdminError>> + Send;
 
     fn create_default_admin_key(
         &self,
@@ -41,9 +41,9 @@ pub trait AdminService {
 }
 
 impl AdminService for AdminServiceImpl {
-    async fn get_public_key(&self, name: &str) -> Result<String, AdminError> {
+    async fn get_admin(&self, name: &str) -> Result<Admin, AdminError> {
         let admin = self.pool.get_admin(name.to_string()).await?;
-        Ok(admin.ssh_key)
+        Ok(admin)
     }
 
     async fn create_default_admin_key(&self, admin_key: &str) -> Result<(), AdminError> {

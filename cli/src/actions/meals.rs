@@ -5,8 +5,8 @@ use tabled::{
 use futures::future::join_all;
 use htc::{
     models::{
-        meals::Meal,
-        restaurants::{RestaurantSchema},
+        meals::{MealSchema},
+        restaurants::RestaurantSchema,
     },
     sources::meals::RestaurantPageScrapedData,
 };
@@ -40,7 +40,7 @@ impl MealsAction {
         }
     }
 
-    pub async fn collect(&self) -> Result<Vec<Vec<Meal>>, MealsActionResult> {
+    pub async fn collect(&self) -> Result<Vec<Vec<MealSchema>>, MealsActionResult> {
         let restaurants_url: Vec<RestaurantSchema> = self
             .client
             .get_restaurants()
@@ -61,7 +61,7 @@ impl MealsAction {
 
     pub async fn collect_restaurant(
         restaurant: RestaurantSchema,
-    ) -> Result<Vec<Meal>, MealsActionResult> {
+    ) -> Result<Vec<MealSchema>, MealsActionResult> {
         let page_data = RestaurantPageScraper::new(restaurant.url.to_string())
             .scrape()
             .await
@@ -72,10 +72,7 @@ impl MealsAction {
             restaurant,
             page: page_data,
         };
-        let meals: Vec<Meal> = scraped_data.try_into().map_err(|_| {
-            MealsActionResult::Failure("Failed to convert restaurant page".to_string())
-        })?;
-
+        let meals: Vec<MealSchema> = scraped_data.into();
         Ok(meals)
     }
 
@@ -85,7 +82,7 @@ impl MealsAction {
         })?;
 
         if self.dry_run {
-            let table_data: Vec<&Meal>= meals.iter().flatten().collect();
+            let table_data: Vec<&MealSchema> = meals.iter().flatten().collect();
             let table_data= table_data.iter().map(|meal| {
                 DisplayableMeal {
                     meal_type: meal.meal_type.clone(),
@@ -100,6 +97,10 @@ impl MealsAction {
             table.with(Style::modern());
             table.modify(Columns::first(), Alignment::right());
             println!("{}", table);
+        }else {
+            for meals_by_restaurant in meals {
+                let _ = self.client.put_meals(meals_by_restaurant).await;
+            }
         }
         Ok(())
     }

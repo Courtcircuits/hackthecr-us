@@ -45,10 +45,10 @@ where
         crate::verifiable::sign(payload, private_key, author.to_string())
     }
 
-    pub fn verify(&self, public_key: &str) -> Result<&T, SigningError> {
+    pub fn verify(&self, public_key: &str) -> Result<(&T, String), SigningError> {
         let serialized_payload = serde_json::json!(self.payload).to_string();
         verify(serialized_payload, &self.signature, public_key)?;
-        Ok(&self.payload)
+        Ok((&self.payload, self.author.clone()))
     }
 }
 

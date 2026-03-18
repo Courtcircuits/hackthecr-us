@@ -8,6 +8,7 @@ pub struct School {
     pub long_name: String,
     pub name: String,
     pub coordinates: Option<String>,
+    pub batch_id: Uuid
 }
 
 pub enum SchoolModelError {
@@ -24,11 +25,12 @@ pub trait SchoolModel {
 impl SchoolModel for PgPool {
     async fn create_school(&self, school: School) -> Result<(), SchoolModelError> {
         sqlx::query!(
-            "INSERT INTO schools (school_id, long_name, name, coordinates) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO schools (school_id, long_name, name, coordinates, batch_id) VALUES ($1, $2, $3, $4, $5)",
             school.school_id,
             school.long_name,
             school.name,
-            school.coordinates
+            school.coordinates,
+            school.batch_id
         )
         .execute(self)
         .await
@@ -39,7 +41,7 @@ impl SchoolModel for PgPool {
 
     async fn get_school_by_name(&self, name: String) -> Result<School, SchoolModelError> {
         let row = sqlx::query!(
-            "SELECT school_id, long_name, name, coordinates FROM schools WHERE name = $1",
+            "SELECT school_id, long_name, name, coordinates, batch_id FROM schools WHERE name = $1",
             name
         )
         .fetch_optional(self)
@@ -52,12 +54,13 @@ impl SchoolModel for PgPool {
             long_name: row.long_name,
             name: row.name,
             coordinates: row.coordinates,
+            batch_id: row.batch_id
         })
     }
 
     async fn get_all_schools(&self) -> Result<Vec<School>, SchoolModelError> {
         let rows = sqlx::query!(
-            "SELECT school_id, long_name, name, coordinates FROM schools"
+            "SELECT school_id, long_name, name, coordinates, batch_id FROM schools"
         )
         .fetch_all(self)
         .await
@@ -70,6 +73,7 @@ impl SchoolModel for PgPool {
                 long_name: row.long_name,
                 name: row.name,
                 coordinates: row.coordinates,
+                batch_id: row.batch_id
             })
             .collect();
 

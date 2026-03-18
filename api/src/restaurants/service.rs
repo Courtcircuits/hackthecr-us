@@ -1,20 +1,26 @@
 use std::sync::Arc;
 
-use htc::models::restaurants::{Restaurant, RestaurantModel as _, RestaurantModelError};
+use htc::models::{restaurants::{Restaurant, RestaurantModel as _, RestaurantModelError}, Entity};
 use sqlx::PgPool;
 
-pub trait RestaurantsServices {
+use crate::batches::service::{BatchesService, BatchesServiceImpl};
+
+pub trait RestaurantsService {
     fn save_restaurants(&self, restaurants: Vec<Restaurant>) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
-    fn get_restaurant_by_name(&self, name: String) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
+    fn get_restaurant_by_id(&self, id: String) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
     fn get_restaurants(&self) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
 }
 
 #[derive(Clone)]
-pub struct RestaurantsServiceImpl {
-    pool: Arc<PgPool>
+pub struct RestaurantsServiceImpl<B>
+where
+    B: BatchesService
+{
+    pool: Arc<PgPool>,
+    batch_service: Arc<B>
 }
 
-impl RestaurantsServices for RestaurantsServiceImpl {
+impl RestaurantsService for RestaurantsServiceImpl<BatchesServiceImpl> {
     async fn save_restaurants(&self, restaurants: Vec<Restaurant>) -> Result<(), RestaurantModelError> {
         for restaurant in restaurants {
             self.pool.create_restaurant(restaurant).await?;
@@ -22,17 +28,25 @@ impl RestaurantsServices for RestaurantsServiceImpl {
         Ok(())
     }
 
-    async fn get_restaurant_by_name(&self, name: String) -> Result<Restaurant, RestaurantModelError> {
-        self.pool.get_restaurant_by_name(name).await
+    async fn get_restaurant_by_id(&self, id: String) -> Result<Restaurant, RestaurantModelError> {
+        self.pool.get_restaurant_by_id(id).await
     }
 
     async fn get_restaurants(&self) -> Result<Vec<Restaurant>, RestaurantModelError> {
-        self.pool.get_all_restaurants().await
+        let current_batch = self
+            .batch_service
+            .current_batch(Entity::Restaurants)
+            .await
+            .map_err(|_| RestaurantModelError::NotFound)?;
+        self.pool.get_all_restaurants_batch(current_batch).await
     }
 }
 
-impl RestaurantsServiceImpl {
-    pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { pool }
+impl<B> RestaurantsServiceImpl<B> 
+where
+    B: BatchesService
+{
+    pub fn new(pool: Arc<PgPool>, batch_service: Arc<B>) -> Self {
+        Self { pool, batch_service }
     }
 }

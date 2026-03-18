@@ -33,14 +33,14 @@ impl From<Category> for &str {
 pub struct Keyword {
     pub keyword_id: Uuid,
     pub keyword: String,
-    pub restaurant_id: Uuid,
+    pub restaurant_id: String,
     pub category: Category,
 }
 
 pub trait KeywordModel {
     fn create_keyword(&self, keyword: Keyword) -> impl Future<Output = Result<(), String>> + Send;
-    fn get_keywords_by_restaurant_id(&self, restaurant_id: Uuid) -> impl Future<Output = Result<Vec<Keyword>, String>> + Send;
-    fn query_restaurant(&self, query: String) -> impl Future<Output = Result<Vec<Uuid>, String>> + Send;
+    fn get_keywords_by_restaurant_id(&self, restaurant_id: String) -> impl Future<Output = Result<Vec<Keyword>, String>> + Send;
+    fn query_restaurant(&self, query: String) -> impl Future<Output = Result<Vec<String>, String>> + Send;
 }
 
 impl KeywordModel for PgPool {
@@ -60,7 +60,7 @@ impl KeywordModel for PgPool {
         Ok(())
     }
 
-    async fn get_keywords_by_restaurant_id(&self, restaurant_id: Uuid) -> Result<Vec<Keyword>, String> {
+    async fn get_keywords_by_restaurant_id(&self, restaurant_id: String) -> Result<Vec<Keyword>, String> {
         let rows = sqlx::query!(
             "SELECT keyword_id, keyword, restaurant_id, category FROM keywords WHERE restaurant_id = $1",
             restaurant_id
@@ -82,7 +82,7 @@ impl KeywordModel for PgPool {
         Ok(keywords)
     }
 
-    async fn query_restaurant(&self, query: String) -> Result<Vec<Uuid>, String> {
+    async fn query_restaurant(&self, query: String) -> Result<Vec<String>, String> {
         let pattern = format!("%{}%", query);
         let rows = sqlx::query!(
             "SELECT DISTINCT restaurant_id FROM keywords WHERE keyword ILIKE $1",

@@ -1,25 +1,21 @@
 use scraper::{restaurant_list::RestaurantData, restaurant_page::RestaurantPageData};
-use sqlx::types::uuid;
-
-use crate::models::restaurants::Restaurant;
+use crate::{id::build_id, models::restaurants::{RestaurantSchema}};
 
 pub struct RestaurantScrapedData {
     pub page: RestaurantPageData,
     pub description: RestaurantData,
 }
 
-impl Into<Restaurant> for RestaurantScrapedData {
-    fn into(self) -> Restaurant {
+impl Into<RestaurantSchema> for RestaurantScrapedData {
+    fn into(self) -> RestaurantSchema {
         let (latitude, longitude) = self.page.coordinates;
-        Restaurant {
-            restaurant_id: uuid::uuid!("00000000-0000-0000-0000-000000000000"),
+        RestaurantSchema {
+            id: build_id(&self.description.name),
             name: self.description.name,
             url: self.description.crous_url,
             city: Some(self.description.city),
             coordinates: Some(format!("{},{}", latitude, longitude)),
             opening_hours: Some(self.page.hours),
-            created_at: None,
-            updated_at: None
         }
     }
 }
@@ -68,7 +64,7 @@ mod tests {
             description: restaurant_data,
         };
 
-        let restaurant: Restaurant = scraped.into();
+        let restaurant: RestaurantSchema = scraped.into();
         assert_eq!(restaurant.name, "Test Restaurant");
         assert_eq!(restaurant.url, "https://example.com/restaurant");
         assert_eq!(restaurant.city, Some("Strasbourg".to_string()));

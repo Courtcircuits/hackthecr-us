@@ -1,18 +1,19 @@
 use thiserror::Error;
+use futures::future::join_all;
 use htc::{
-    models::restaurants::{Restaurant},
+    models::restaurants::RestaurantSchema,
     sources::restaurants::RestaurantScrapedData,
 };
 
 use scraper::{
-    Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
+    Scraper, restaurant_list::{RestaurantListScraper}, restaurant_page::RestaurantPageScraper,
 };
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
 };
 
-use crate::{client::HTCClient, crous::{self, CrousRegion, CrousUrl}};
+use crate::{client::HTCClient, crous::{CrousRegion, CrousUrl}};
 
 pub struct RestaurantsAction {
     pub target: CrousRegion,
@@ -37,10 +38,10 @@ impl RestaurantsAction {
         }
     }
 
-    pub async fn collect(&self) -> Result<Vec<Restaurant>, RestaurantsActionResult> {
+    pub async fn collect(&self) -> Result<Vec<RestaurantSchema>, RestaurantsActionResult> {
         let url = CrousUrl(self.target.url().to_string()).to_list_url();
 
-        let mut restaurants: Vec<Restaurant> = Vec::new();
+        let mut restaurants: Vec<RestaurantSchema> = Vec::new();
         println!(
             "Collecting restaurant data from {}...",
             url
@@ -52,28 +53,35 @@ impl RestaurantsAction {
                 RestaurantsActionResult::Failure(format!("Failed to scrape restaurant list: {}", e))
             })?;
 
-        for restaurant_desc in &list_data {
-            let url = &restaurant_desc.crous_url;
-            let page_data = RestaurantPageScraper::new(url.to_string())
-                .scrape()
-                .await
-                .map_err(|e| {
-                    RestaurantsActionResult::Failure(format!(
-                        "Failed to scrape restaurant page at {}: {}",
-                        url, e
-                    ))
-                })?;
-
-            let scraped_data = RestaurantScrapedData {
-                page: page_data,
-                description: restaurant_desc.clone(),
-            };
-
-            let restaurant: Restaurant = scraped_data.into();
-            restaurants.push(restaurant);
+        let futures = list_data.into_iter().map(Self::collect_restaurant);
+        let results = join_all(futures).await;
+        for result in results {
+            restaurants.push(result?);
         }
 
         Ok(restaurants)
+    }
+
+    async fn collect_restaurant(
+        restaurant_desc: scraper::restaurant_list::RestaurantData,
+    ) -> Result<RestaurantSchema, RestaurantsActionResult> {
+        let url = &restaurant_desc.crous_url;
+        let page_data = RestaurantPageScraper::new(url.to_string())
+            .scrape()
+            .await
+            .map_err(|e| {
+                RestaurantsActionResult::Failure(format!(
+                    "Failed to scrape restaurant page at {}: {}",
+                    url, e
+                ))
+            })?;
+
+        let scraped_data = RestaurantScrapedData {
+            page: page_data,
+            description: restaurant_desc,
+        };
+
+        Ok(scraped_data.into())
     }
 
     pub async fn execute(&self) -> Result<(), RestaurantsActionResult> {
@@ -84,7 +92,7 @@ impl RestaurantsAction {
         if self.dry_run {
             println!("Collected {} restaurants (dry run):", restaurants.len());
             let table_data = restaurants.iter().map(|restaurant| {
-                let restaurant: Restaurant = restaurant.clone();
+                let restaurant: RestaurantSchema = restaurant.clone();
                 DisplayableRestaurant {
                     name: restaurant.name,
                     url: restaurant.url,

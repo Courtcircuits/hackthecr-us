@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 use crate::{
-    actions::{meals::{MealsAction, MealsActionResult}, restaurants::RestaurantsAction}, client::HTCClient, config::Config, crous::CrousRegion,
+    actions::{meals::{MealsAction}, restaurants::RestaurantsAction}, client::HTCClient, config::Config, crous::CrousRegion,
 };
 
 pub mod actions;
@@ -124,6 +124,6 @@ async fn main() {
         Command::Schedule {} => {
             todo!("Implement scheduling")
         }
-        Command::Generate { user, dry_run } => {}
+        Command::Generate { user: _user, dry_run: _dry_run } => {}
     }
 }

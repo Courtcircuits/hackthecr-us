@@ -1,6 +1,7 @@
 use axum::{Json, extract::State, http::StatusCode};
+use htc::id::build_id;
+use htc::models::Entity;
 use tracing::error;
-use uuid::Uuid;
 use htc::models::restaurants::{Restaurant, RestaurantSchema};
 use htc::verifiable::SignedPayload;
 
@@ -26,11 +27,17 @@ pub async fn put_restaurant<A>(
 where
     A: App + Send + Sync + Clone
 {
-    let user_key = state.get_public_key(&body.author).await.map_err(|e| {
+    let admin = state.get_admin(&body.author).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
     })?;
-    let payload = body.verify(&user_key).map_err(|e| {
+    let user_key = admin.ssh_key;
+    let (payload, _author) = body.verify(&user_key).map_err(|e| {
+        error!("{}", e.to_string());
+        ApiError::Unauthorized(e.to_string())
+    })?;
+
+    let batch = state.create_batch(Entity::Restaurants, admin.admin_id).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
     })?;
@@ -38,7 +45,7 @@ where
     let restaurants: Vec<Restaurant> = payload
         .iter()
         .map(|schema| Restaurant {
-            restaurant_id: Uuid::new_v4(),
+            restaurant_id: build_id(&schema.name.clone()),
             name: schema.name.clone(),
             url: schema.url.clone(),
             city: schema.city.clone(),
@@ -46,6 +53,7 @@ where
             opening_hours: schema.opening_hours.clone(),
             created_at: None,
             updated_at: None,
+            batch_id: batch
         })
         .collect();
     state

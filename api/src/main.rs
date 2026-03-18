@@ -6,19 +6,22 @@ use clap::Parser as _;
 use crate::{
     admins::service::{AdminService, AdminServiceImpl},
     app::AppImpl,
+    batches::service::BatchesServiceImpl,
     config::Config,
+    meals::service::MealsServiceImpl,
     restaurants::service::RestaurantsServiceImpl,
     router::root,
 };
 
+pub mod admins;
 pub mod app;
+pub mod batches;
 pub mod config;
 pub mod error;
 pub mod http;
+pub mod meals;
 pub mod restaurants;
 pub mod router;
-pub mod admins;
-pub mod meals;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,23 +34,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = sqlx::PgPool::connect(&config.database_url).await?;
     let pool = Arc::new(pool);
 
-    let restaurants_service = RestaurantsServiceImpl::new(pool.clone());
+    let batch_service = Arc::new(BatchesServiceImpl::new(pool.clone()));
+    let restaurants_service = RestaurantsServiceImpl::new(pool.clone(), batch_service.clone());
+    let meals_service = MealsServiceImpl::new(pool.clone(), batch_service.clone());
     let admin_service = AdminServiceImpl::new(pool.clone());
     let key = config.admin_public_key.clone();
 
     if !key.is_empty() {
         info!("Default key found");
-        let _ = admin_service.create_default_admin_key(&key).await.map_err(|e| {
-            tracing::error!("{}", e.to_string());
-        });
+        let _ = admin_service
+            .create_default_admin_key(&key)
+            .await
+            .map_err(|e| {
+                tracing::error!("{}", e.to_string());
+            });
         info!("Default admin key inserted");
-    }else {
+    } else {
         info!("No default key found");
     }
 
-
-
-    let app = AppImpl::new(restaurants_service, admin_service, config.clone());
+    let app = AppImpl::new(
+        restaurants_service,
+        meals_service,
+        admin_service,
+        batch_service,
+        config.clone(),
+    );
     let root = root(app).await.map_err(|e| {
         error!("Failed to create router: {}", e);
         e
