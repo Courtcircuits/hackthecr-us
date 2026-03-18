@@ -18,3 +18,5 @@ serde_json.workspace = true
 serde_yaml = "0.9.34"
 rcgen = "0.14.7"
 futures = "0.3.32"
+zenity = "3.6.1"
+color-print = "0.3.7"

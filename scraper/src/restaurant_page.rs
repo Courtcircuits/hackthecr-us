@@ -154,17 +154,9 @@ impl RestaurantPageScraper {
             Some((lat, lon))
         });
 
-        let Some(hours) = hours else {
-            return Err(RestaurantPageScraperError::ParsingFailed(
-                "Couldn't find hours".to_string(),
-            ));
-        };
+        let hours = hours.unwrap_or("N/A".to_string());
 
-        let Some(coordinates) = coordinates else {
-            return Err(RestaurantPageScraperError::ParsingFailed(
-                "Couldn't find coordinates".to_string(),
-            ));
-        };
+        let coordinates = coordinates.unwrap_or((0.0, 0.0));
 
         Ok(RestaurantPageData {
             menus,

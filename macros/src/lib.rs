@@ -160,6 +160,9 @@ pub fn generate_crous_data(input: TokenStream) -> TokenStream {
 
         impl CrousUrl {
             pub fn to_list_url(&self) -> String {
+                if self.0.contains("paris") {
+                    return format!("{}se-restaurer/ou-manger/carte", self.0);
+                }
                 format!("{}se-restaurer/ou-manger/", self.0)
             }
         }

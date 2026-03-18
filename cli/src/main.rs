@@ -1,6 +1,7 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, process::exit};
 
 use clap::{Parser, Subcommand};
+use color_print::cprintln;
 
 use crate::{
     actions::{meals::{MealsAction}, restaurants::RestaurantsAction}, client::HTCClient, config::Config, crous::CrousRegion,
@@ -81,8 +82,8 @@ async fn main() {
                 return;
             }
             _ => {
-                eprintln!("Config not found");
-                panic!("Config not found");
+                cprintln!("💣 <red>Config not found</red>");
+                exit(0)
             }
         }
     };
@@ -97,10 +98,10 @@ async fn main() {
             let action = RestaurantsAction::new(target, dry_run, client);
             match action.execute().await {
                 Ok(()) => {
-                    println!("Successfully collected and stored restaurant data.");
+                    cprintln!("✅ <green>Successfully collected and stored restaurant data.</green>");
                 }
                 Err(e) => {
-                    eprintln!("Failed to collect restaurant data: {}", e);
+                    cprintln!("💣 <red>Failed to collect restaurant data: {}</red>", e);
                 }
             }
         }
@@ -108,10 +109,10 @@ async fn main() {
             let action = MealsAction::new(target, dry_run, client);
             match action.execute().await {
                 Ok(()) => {
-                    println!("Successfully collected and stored restaurant data.");
+                    cprintln!("✅ <green>Successfully collected and stored restaurant data.</green>");
                 }
                 Err(e) => {
-                    eprintln!("Failed to collect restaurant data: {}", e);
+                    cprintln!("💣 <red>Failed to collect restaurant data: {}</red>", e);
                 }
             }
         }

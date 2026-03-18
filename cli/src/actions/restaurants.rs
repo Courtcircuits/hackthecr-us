@@ -1,26 +1,31 @@
-use thiserror::Error;
-use futures::future::join_all;
-use htc::{
-    models::restaurants::RestaurantSchema,
-    sources::restaurants::RestaurantScrapedData,
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
 };
 
+use futures::future::join_all;
+use htc::{models::restaurants::RestaurantSchema, sources::restaurants::RestaurantScrapedData};
+use thiserror::Error;
+
 use scraper::{
-    Scraper, restaurant_list::{RestaurantListScraper}, restaurant_page::RestaurantPageScraper,
+    Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
 };
+use zenity::progress::{Frames, ProgressBar};
 
-use crate::{client::HTCClient, crous::{CrousRegion, CrousUrl}};
+use crate::{
+    client::HTCClient,
+    crous::{CrousRegion, CrousUrl},
+};
 
 pub struct RestaurantsAction {
     pub target: CrousRegion,
     pub dry_run: bool,
-    
 
-    pub client: HTCClient
+    pub client: HTCClient,
 }
 
 #[derive(Debug, Error)]
@@ -34,7 +39,7 @@ impl RestaurantsAction {
         Self {
             target,
             dry_run,
-            client
+            client,
         }
     }
 
@@ -42,10 +47,6 @@ impl RestaurantsAction {
         let url = CrousUrl(self.target.url().to_string()).to_list_url();
 
         let mut restaurants: Vec<RestaurantSchema> = Vec::new();
-        println!(
-            "Collecting restaurant data from {}...",
-            url
-        );
         let list_data = RestaurantListScraper::new(url.to_string())
             .scrape()
             .await
@@ -53,7 +54,14 @@ impl RestaurantsAction {
                 RestaurantsActionResult::Failure(format!("Failed to scrape restaurant list: {}", e))
             })?;
 
-        let futures = list_data.into_iter().map(Self::collect_restaurant);
+        let progress = Arc::new(ProgressBar::new(Frames::rect().set_goal(list_data.len())));
+        let uid = progress.get_last();
+        progress.run_all();
+
+        let counter = Arc::new(AtomicUsize::new(0));
+        let futures = list_data
+            .into_iter()
+            .map(|data| Self::collect_restaurant(data, progress.clone(), uid, counter.clone()));
         let results = join_all(futures).await;
         for result in results {
             restaurants.push(result?);
@@ -64,6 +72,9 @@ impl RestaurantsAction {
 
     async fn collect_restaurant(
         restaurant_desc: scraper::restaurant_list::RestaurantData,
+        progress_bar: Arc<ProgressBar>,
+        uid: usize,
+        counter: Arc<AtomicUsize>,
     ) -> Result<RestaurantSchema, RestaurantsActionResult> {
         let url = &restaurant_desc.crous_url;
         let page_data = RestaurantPageScraper::new(url.to_string())
@@ -81,6 +92,9 @@ impl RestaurantsAction {
             description: restaurant_desc,
         };
 
+        let completed = counter.fetch_add(1, Ordering::Relaxed) + 1;
+        progress_bar.set(&uid, &completed);
+
         Ok(scraped_data.into())
     }
 
@@ -90,7 +104,6 @@ impl RestaurantsAction {
         })?;
 
         if self.dry_run {
-            println!("Collected {} restaurants (dry run):", restaurants.len());
             let table_data = restaurants.iter().map(|restaurant| {
                 let restaurant: RestaurantSchema = restaurant.clone();
                 DisplayableRestaurant {

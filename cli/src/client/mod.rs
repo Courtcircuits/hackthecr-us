@@ -26,7 +26,6 @@ pub enum ClientError {
 
 impl HTCClient {
     pub fn new(url: String, private_key: String, author: String) -> Self {
-        println!("Saving in {}", url);
         HTCClient {
             url,
             client: reqwest::Client::new(),
@@ -48,7 +47,6 @@ impl HTCClient {
         )
         .map_err(|e| ClientError::PayloadSigningFailed(e.to_string()))?;
 
-        println!("{:?}", payload);
 
         let response = client
             .put(format!("{}/restaurants", self.url))
@@ -57,7 +55,6 @@ impl HTCClient {
             .await
             .map_err(|e| ClientError::PutRestaurantFailed(e.to_string()))?;
 
-        println!("{:?}", response);
 
         Ok(())
     }

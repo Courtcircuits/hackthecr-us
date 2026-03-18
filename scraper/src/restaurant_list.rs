@@ -70,7 +70,7 @@ impl Scraper<Vec<RestaurantData>> for RestaurantListScraper {
                 .select(&city_selector)
                 .next()
                 .map(|e| e.inner_html())
-                .unwrap_or_default();
+                .unwrap_or("N/A".to_string());
 
             if !title.is_empty() && !city.is_empty() && !link_target.is_empty() {
                 restaurants.push(RestaurantData {
