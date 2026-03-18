@@ -9,6 +9,8 @@ use utoipa::ToSchema;
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
 pub struct RestaurantSchema {
+    // optional because of put requests
+    pub id: Option<String>,
     pub name: String,
     pub url: String,
     pub city: Option<String>,
@@ -19,6 +21,7 @@ pub struct RestaurantSchema {
 impl From<Restaurant> for RestaurantSchema {
     fn from(restaurant: Restaurant) -> Self {
         RestaurantSchema {
+            id: Some(restaurant.restaurant_id.to_string()),
             name: restaurant.name,
             url: restaurant.url,
             city: restaurant.city,
@@ -32,6 +35,7 @@ impl From<Restaurant> for RestaurantSchema {
 impl From<&Restaurant> for RestaurantSchema {
     fn from(restaurant: &Restaurant) -> Self {
         RestaurantSchema {
+            id: Some(restaurant.restaurant_id.to_string()),
             name: restaurant.name.clone(),
             url: restaurant.url.clone(),
             city: restaurant.city.clone(),

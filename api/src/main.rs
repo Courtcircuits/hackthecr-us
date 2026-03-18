@@ -18,6 +18,7 @@ pub mod http;
 pub mod restaurants;
 pub mod router;
 pub mod admins;
+pub mod meals;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

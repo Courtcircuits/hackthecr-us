@@ -4,6 +4,7 @@ use chrono::NaiveDateTime;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
+#[derive(Clone)]
 pub struct Meal {
     pub meal_id: Uuid,
     pub meal_type: String,

@@ -17,5 +17,3 @@ pub fn generate_ed25519_pem() -> Result<Ed25519Pem, rcgen::Error> {
         private_key
     })
 }
-
-

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 use crate::{
-    actions::restaurants::RestaurantsAction, client::HTCClient, config::Config, crous::CrousRegion,
+    actions::{meals::{MealsAction, MealsActionResult}, restaurants::RestaurantsAction}, client::HTCClient, config::Config, crous::CrousRegion,
 };
 
 pub mod actions;
@@ -35,7 +35,7 @@ pub enum Command {
     },
     Meals {
         #[clap(long, short = 't')]
-        target: String,
+        target: CrousRegion,
         #[clap(long, short = 'd')]
         dry_run: bool,
     },
@@ -105,10 +105,15 @@ async fn main() {
             }
         }
         Command::Meals { target, dry_run } => {
-            println!(
-                "Meals command is not implemented yet. Target: {}, Dry run: {}",
-                target, dry_run
-            );
+            let action = MealsAction::new(target, dry_run, client);
+            match action.execute().await {
+                Ok(()) => {
+                    println!("Successfully collected and stored restaurant data.");
+                }
+                Err(e) => {
+                    eprintln!("Failed to collect restaurant data: {}", e);
+                }
+            }
         }
         Command::Schools { target, dry_run } => {
             println!(

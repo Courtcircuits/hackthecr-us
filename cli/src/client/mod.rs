@@ -17,6 +17,8 @@ pub enum RestaurantClientError {
     PutRestaurantFailed(String),
     #[error("Couldn't sign payload : {0}")]
     PayloadSigningFailed(String),
+    #[error("Couldn't get restaurants : {0}")]
+    GetRestaurantsFailed(String),
 }
 
 impl HTCClient {
@@ -56,5 +58,20 @@ impl HTCClient {
         println!("{:?}", response);
 
         Ok(())
+    }
+
+    pub async fn get_restaurants(
+        &self,
+    ) -> Result<Vec<RestaurantSchema>, RestaurantClientError> {
+        let client = Client::new();
+        let restaurants = client
+            .get(format!("{}/restaurants", self.url))
+            .send()
+            .await
+            .map_err(|e| RestaurantClientError::GetRestaurantsFailed(e.to_string()))?
+            .json::<Vec<RestaurantSchema>>()
+            .await
+            .map_err(|e| RestaurantClientError::GetRestaurantsFailed(e.to_string()))?;
+        Ok(restaurants)
     }
 }

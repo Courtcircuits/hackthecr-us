@@ -1,34 +1,52 @@
+use std::str::FromStr;
+
 use scraper::restaurant_page::RestaurantPageData;
 use sqlx::types::uuid;
 
-use crate::models::{meals::Meal, restaurants::Restaurant};
+use crate::models::{
+    meals::Meal,
+    restaurants::{Restaurant, RestaurantSchema},
+};
 
 pub struct RestaurantPageScrapedData {
-    pub restaurant: Restaurant,
-    pub page: RestaurantPageData
+    pub restaurant: RestaurantSchema,
+    pub page: RestaurantPageData,
 }
 
-impl Into<Vec<Meal>> for RestaurantPageScrapedData  {
-    fn into(self) -> Vec<Meal> {
+#[derive(thiserror::Error, Debug)]
+pub enum RestaurantConvertError {
+    #[error("Not an uuid")]
+    NotAnUUID,
+}
+
+impl TryFrom<RestaurantPageScrapedData> for Vec<Meal> {
+    type Error = RestaurantConvertError;
+
+    fn try_from(val: RestaurantPageScrapedData) -> Result<Self, Self::Error> {
         let mut meals = Vec::new();
-        for menu in self.page.menus {
+        let restaurant_id = uuid::Uuid::from_str(
+            &val.restaurant
+                .id
+                .map_or_else(|| "00000000-0000-0000-0000-000000000000".to_string(), |v| v),
+        )
+        .map_err(|_| RestaurantConvertError::NotAnUUID)?;
+        for menu in val.page.menus {
             for meal_data in menu.meals {
                 for category in meal_data.categories {
                     for dish in category.dishes {
                         meals.push(Meal {
                             meal_id: uuid::uuid!("00000000-0000-0000-0000-000000000000"),
-                            restaurant_id: self.restaurant.restaurant_id,
+                            restaurant_id,
                             foodies: Some(dish),
                             meal_type: category.name.clone(),
                             date: Some(menu.date.clone()),
-                            scraped_at: None
+                            scraped_at: None,
                         });
                     }
                 }
             }
         }
-        meals
-
+        Ok(meals)
     }
 }
 
@@ -41,16 +59,14 @@ mod tests {
 
     use super::*;
 
-    fn make_restaurant() -> Restaurant {
-        Restaurant {
-            restaurant_id: uuid::uuid!("00000000-0000-0000-0000-000000000001"),
+    fn make_restaurant() -> RestaurantSchema {
+        RestaurantSchema {
+            id: Some("00000000-0000-0000-0000-000000000001".to_string()),
             name: "Test Restaurant".to_string(),
             url: "https://example.com".to_string(),
             coordinates: None,
             opening_hours: None,
-            created_at: None,
             city: None,
-            updated_at: None,
         }
     }
 
@@ -64,14 +80,14 @@ mod tests {
                 coordinates: (48.5734, 7.7521),
             },
         };
-        let meals: Vec<Meal> = scraped.into();
+        let meals: Vec<Meal> = scraped.try_into().unwrap();
         assert!(meals.is_empty());
     }
 
     #[test]
     fn test_single_dish_becomes_one_meal() {
         let restaurant = make_restaurant();
-        let restaurant_id = restaurant.restaurant_id;
+        let restaurant_id = restaurant.clone().id;
         let scraped = RestaurantPageScrapedData {
             restaurant,
             page: RestaurantPageData {
@@ -89,9 +105,9 @@ mod tests {
                 coordinates: (48.5734, 7.7521),
             },
         };
-        let meals: Vec<Meal> = scraped.into();
+        let meals: Vec<Meal> = scraped.try_into().unwrap();
         assert_eq!(meals.len(), 1);
-        assert_eq!(meals[0].restaurant_id, restaurant_id);
+        assert_eq!(meals[0].restaurant_id.to_string(), restaurant_id.unwrap());
         assert_eq!(meals[0].foodies, Some("Spaghetti".to_string()));
         assert_eq!(meals[0].meal_type, "Main Course");
         assert_eq!(meals[0].date, Some("2024-06-01".to_string()));
@@ -122,7 +138,7 @@ mod tests {
                 coordinates: (48.5734, 7.7521),
             },
         };
-        let meals: Vec<Meal> = scraped.into();
+        let meals: Vec<Meal> = scraped.try_into().unwrap();
         assert_eq!(meals.len(), 3);
         assert_eq!(meals[0].foodies, Some("Spaghetti".to_string()));
         assert_eq!(meals[0].meal_type, "Main Course");
@@ -163,7 +179,7 @@ mod tests {
                 coordinates: (48.5734, 7.7521),
             },
         };
-        let meals: Vec<Meal> = scraped.into();
+        let meals: Vec<Meal> = scraped.try_into().unwrap();
         assert_eq!(meals.len(), 2);
         assert_eq!(meals[0].date, Some("2024-06-01".to_string()));
         assert_eq!(meals[1].date, Some("2024-06-02".to_string()));

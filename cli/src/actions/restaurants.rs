@@ -99,13 +99,12 @@ impl RestaurantsAction {
             table.with(Style::modern());
             table.modify(Columns::first(), Alignment::right());
             println!("{}", table);
-            Ok(())
         } else {
             // Here you would normally save the restaurants to a database
             // For this example, we'll just print them out
             let _ = self.client.put_restaurants(restaurants).await;
-            Ok(())
         }
+        Ok(())
     }
 }
 
