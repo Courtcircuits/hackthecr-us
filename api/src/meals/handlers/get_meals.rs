@@ -4,7 +4,7 @@ use axum::{
     Json,
     extract::{Path, State},
 };
-use htc::models::meals::MealSchema;
+use htc::{models::meals::MealSchema, regions::CrousRegion};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -49,8 +49,9 @@ impl From<Vec<MealSchema>> for MenuSchema {
 
 #[utoipa::path(
     get,
-    path = "/meals/{name}",
+    path = "/{region}/meals/{name}",
     params(
+        ("region" = String, Path, description = "Region of the restaurant"),
         ("name" = String, Path, description = "Restaurant name")
     ),
     tag = "Meals",
@@ -60,14 +61,15 @@ impl From<Vec<MealSchema>> for MenuSchema {
     )
 )]
 pub async fn get_meals<A>(
-    Path(name): Path<String>,
+    Path((region, name)): Path<(String, String)>,
     State(state): State<A>,
 ) -> Result<Json<Vec<MenuSchema>>, ApiError>
 where
     A: App + Send + Sync + Clone,
 {
+    let region: CrousRegion = region.parse().map_err(|_| ApiError::NotFound(format!("Unknown region: {}", region)))?;
     let meals = state
-        .get_meals_by_restaurant_id(name)
+        .get_meals_by_restaurant_id(name, region)
         .await
         .map_err(|e| ApiError::InternalServerError(e.to_string()))?;
 

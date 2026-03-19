@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 htc = { package = "htc", path = "../htc" }
-macros = { path = "../macros" }
 scraper = { path = "../scraper" }
 tabled = "0.20.0"
 reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }

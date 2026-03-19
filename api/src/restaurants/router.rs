@@ -7,7 +7,7 @@ where
     A: App + Send + Sync + Clone + 'static
 {
     Router::new()
-        .route("/restaurants", get(get_restaurants::<A>))
-        .route("/restaurants", put(put_restaurant::<A>))
+        .route("/{region}/restaurants", get(get_restaurants::<A>))
+        .route("/{region}/restaurants", put(put_restaurant::<A>))
         .with_state(app)
 }

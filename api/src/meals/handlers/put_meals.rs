@@ -1,5 +1,6 @@
-use axum::{extract::State, Json};
-use htc::{models::{meals::{Meal, MealSchema}, Entity}, verifiable::SignedPayload};
+
+use axum::{extract::{Path, State}, Json};
+use htc::{models::{meals::{Meal, MealSchema}, Entity}, regions::CrousRegion, verifiable::SignedPayload};
 use reqwest::StatusCode;
 use tracing::error;
 use uuid::Uuid;
@@ -8,7 +9,7 @@ use crate::{app::App, error::ApiError};
 
 #[utoipa::path(
     put,
-    path = "/meals",
+    path = "/{region}/meals",
     tag = "Meals",
     request_body = SignedPayload<Vec<MealSchema>>,
     responses(
@@ -18,12 +19,14 @@ use crate::{app::App, error::ApiError};
     )
 )]
 pub async fn put_meals<A>(
+    Path(region): Path<String>,
     State(state): State<A>,
     Json(body): Json<SignedPayload<Vec<MealSchema>>>,
 ) -> Result<StatusCode, ApiError>
 where
     A: App + Send + Sync + Clone
 {
+    let region: CrousRegion = region.parse().map_err(|_| ApiError::NotFound(format!("Unknown region: {}", region)))?;
     let admin = state.get_admin(&body.author).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
@@ -40,7 +43,7 @@ where
 
     let restaurant_id = first_meal.restaurant_id.clone();
 
-    let batch = state.create_batch(Entity::Meals(restaurant_id), admin.admin_id).await.map_err(|e| {
+    let batch = state.create_batch(Entity::Meals(restaurant_id), admin.admin_id, region).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
     })?;

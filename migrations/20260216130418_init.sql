@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS scrape_batch(
 		batch_id UUID PRIMARY KEY,
 		entity VARCHAR(400) NOT NULL,
 		author UUID NOT NULL REFERENCES admins(admin_id),
-		scraped_at TIMESTAMP DEFAULT NOW()
+		scraped_at TIMESTAMP DEFAULT NOW(),
+		region VARCHAR(500) NOT NULL
 );
 
 -- Restaurants

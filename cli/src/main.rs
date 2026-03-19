@@ -2,15 +2,15 @@ use std::{path::PathBuf, process::exit};
 
 use clap::{Parser, Subcommand};
 use color_print::cprintln;
+use htc::regions::CrousRegion;
 
 use crate::{
-    actions::{meals::{MealsAction}, restaurants::RestaurantsAction}, client::HTCClient, config::Config, crous::CrousRegion,
+    actions::{meals::{MealsAction}, restaurants::RestaurantsAction}, client::HTCClient, config::Config
 };
 
 pub mod actions;
 pub mod client;
 pub mod config;
-pub mod crous;
 
 #[derive(Parser, Debug)]
 #[clap(

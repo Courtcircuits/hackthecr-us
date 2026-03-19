@@ -10,7 +10,7 @@ pub struct MealSchema {
     pub meal_type: String,
     pub foodies: Option<String>,
     pub date: Option<String>,
-    pub restaurant_id: String,
+    pub restaurant_id: String
 }
 
 #[derive(Clone)]

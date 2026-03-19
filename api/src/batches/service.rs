@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use htc::models::{
+use htc::{models::{
     scrape_batch::{ScrapeBatch, ScrapedBatchModel, ScrapedBatchModelError}, Entity
-};
+}, regions::CrousRegion};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -17,9 +17,10 @@ pub trait BatchesService {
         &self,
         entity: Entity,
         author: Uuid,
+        region: CrousRegion
     ) -> impl Future<Output = Result<Uuid, ScrapedBatchModelError>> + Send;
 
-    fn current_batch(&self, entity: Entity) -> impl Future<Output = Result<Uuid, ScrapedBatchModelError>> + Send;
+    fn current_batch(&self, entity: Entity, region: CrousRegion) -> impl Future<Output = Result<Uuid, ScrapedBatchModelError>> + Send;
 }
 
 impl BatchesService for BatchesServiceImpl {
@@ -27,19 +28,21 @@ impl BatchesService for BatchesServiceImpl {
         &self,
         entity: Entity,
         author_id: Uuid,
+        region: CrousRegion
     ) -> Result<Uuid, ScrapedBatchModelError> {
         let batch_uuid = uuid::Uuid::new_v4();
         self.pool.create_batch(ScrapeBatch {
             batch_id: batch_uuid,
             entity,
             author: author_id,
-            scraped_at: None
+            scraped_at: None,
+            region: region.to_string()
         }).await?;
         Ok(batch_uuid)
     }
 
-    async fn current_batch(&self, entity: Entity) -> Result<Uuid, ScrapedBatchModelError> {
-        self.pool.current_batch(entity).await
+    async fn current_batch(&self, entity: Entity, region: CrousRegion) -> Result<Uuid, ScrapedBatchModelError> {
+        self.pool.current_batch(entity, region).await
     }
 }
 

@@ -13,5 +13,6 @@ utoipa-scalar.workspace = true
 thiserror.workspace = true
 scraper = { path = "../scraper" }
 ed25519-dalek = { version = "2.2.0", features = ["pkcs8", "pem"] }
+macros = { path = "../macros" }
 sha2 = "0.10.9"
 base64.workspace = true

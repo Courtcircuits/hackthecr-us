@@ -4,7 +4,7 @@ use std::sync::{
 };
 
 use futures::future::join_all;
-use htc::{models::restaurants::RestaurantSchema, sources::restaurants::RestaurantScrapedData};
+use htc::{models::restaurants::RestaurantSchema, regions::{CrousRegion, CrousUrl}, sources::restaurants::RestaurantScrapedData};
 use thiserror::Error;
 
 use scraper::{
@@ -18,7 +18,6 @@ use zenity::progress::{Frames, ProgressBar};
 
 use crate::{
     client::HTCClient,
-    crous::{CrousRegion, CrousUrl},
 };
 
 pub struct RestaurantsAction {
@@ -123,7 +122,7 @@ impl RestaurantsAction {
         } else {
             // Here you would normally save the restaurants to a database
             // For this example, we'll just print them out
-            let _ = self.client.put_restaurants(restaurants).await;
+            let _ = self.client.put_restaurants(restaurants, self.target).await;
         }
         Ok(())
     }

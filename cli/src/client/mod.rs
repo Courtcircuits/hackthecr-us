@@ -1,5 +1,7 @@
+use color_print::{cprint, cprintln};
 use htc::{
     models::{meals::MealSchema, restaurants::RestaurantSchema},
+    regions::CrousRegion,
     verifiable::SignedPayload,
 };
 use reqwest::Client;
@@ -21,7 +23,6 @@ pub enum ClientError {
     PayloadSigningFailed(String),
     #[error("Couldn't get restaurants : {0}")]
     GetRestaurantsFailed(String),
-
 }
 
 impl HTCClient {
@@ -37,6 +38,7 @@ impl HTCClient {
     pub async fn put_restaurants(
         &self,
         restaurants: Vec<RestaurantSchema>,
+        region: CrousRegion,
     ) -> Result<(), ClientError> {
         let client = Client::new();
 
@@ -47,24 +49,28 @@ impl HTCClient {
         )
         .map_err(|e| ClientError::PayloadSigningFailed(e.to_string()))?;
 
-
         let response = client
-            .put(format!("{}/restaurants", self.url))
+            .put(format!("{}/{}/restaurants",self.url, region.to_string()))
             .json(&payload)
             .send()
             .await
             .map_err(|e| ClientError::PutRestaurantFailed(e.to_string()))?;
 
-
+        response.error_for_status().map_err(|e| {
+            cprintln!("<red>Got {:#?}</red>", e.to_string());
+            ClientError::PutRestaurantFailed(e.to_string())
+        })?;
         Ok(())
+
     }
 
     pub async fn get_restaurants(
         &self,
+        region: CrousRegion,
     ) -> Result<Vec<RestaurantSchema>, ClientError> {
         let client = Client::new();
         let restaurants = client
-            .get(format!("{}/restaurants", self.url))
+            .get(format!("{}/{}/restaurants",self.url,  region.to_string()))
             .send()
             .await
             .map_err(|e| ClientError::GetRestaurantsFailed(e.to_string()))?
@@ -74,24 +80,17 @@ impl HTCClient {
         Ok(restaurants)
     }
 
-    pub async fn put_meals(
-        &self,
-        meals: Vec<MealSchema>
-    ) -> Result<(), ClientError> {
-        
+    pub async fn put_meals(&self, meals: Vec<MealSchema>,region: CrousRegion) -> Result<(), ClientError> {
         let client = Client::new();
 
-        let payload = SignedPayload::<Vec<MealSchema>>::sign(
-            meals,
-            &self.private_key,
-            &self.author,
-        )
-        .map_err(|e| ClientError::PayloadSigningFailed(e.to_string()))?;
+        let payload =
+            SignedPayload::<Vec<MealSchema>>::sign(meals, &self.private_key, &self.author)
+                .map_err(|e| ClientError::PayloadSigningFailed(e.to_string()))?;
 
         println!("{:?}", payload);
 
         let response = client
-            .put(format!("{}/meals", self.url))
+            .put(format!("{}/{}/meals",self.url,  region))
             .json(&payload)
             .send()
             .await

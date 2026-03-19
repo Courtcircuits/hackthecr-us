@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use htc::models::{
-    Entity,
-    meals::{Meal, MealModel as _, MealModelError},
-};
+use htc::{models::{
+    meals::{Meal, MealModel as _, MealModelError}, Entity
+}, regions::CrousRegion};
 use sqlx::PgPool;
 
 use crate::batches::service::{BatchesService, BatchesServiceImpl};
@@ -16,6 +15,7 @@ pub trait MealsService {
     fn get_meals_by_restaurant_id(
         &self,
         name: String,
+        region: CrousRegion
     ) -> impl Future<Output = Result<Vec<Meal>, MealModelError>> + Send;
 }
 
@@ -36,10 +36,10 @@ impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
         Ok(())
     }
 
-    async fn get_meals_by_restaurant_id(&self, name: String) -> Result<Vec<Meal>, MealModelError> {
+    async fn get_meals_by_restaurant_id(&self, name: String, region: CrousRegion) -> Result<Vec<Meal>, MealModelError> {
         let current_batch = self
             .batch_service
-            .current_batch(Entity::Meals(name.to_string()))
+            .current_batch(Entity::Meals(name.to_string()), region)
             .await
             .map_err(|_| MealModelError::NotFound)?;
         self.pool.get_meals_by_restaurant_id_batch(name, current_batch).await

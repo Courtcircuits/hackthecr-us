@@ -76,6 +76,12 @@ pub fn generate_crous_enum(input: TokenStream) -> TokenStream {
             pub fn all() -> &'static [CrousRegion] {
                 &[#(CrousRegion::#variants),*]
             }
+
+            pub fn to_string(&self) -> String {
+                match self {
+                    #(CrousRegion::#variants => #keys.to_string()),*
+                }
+            }
         }
 
         impl ::std::fmt::Display for CrousRegion {
@@ -94,6 +100,20 @@ pub fn generate_crous_enum(input: TokenStream) -> TokenStream {
                     #(#keys => ::std::result::Result::Ok(CrousRegion::#variants),)*
                     _ => ::std::result::Result::Err(format!("unknown CROUS region: {}", s)),
                 }
+            }
+        }
+
+        impl ::std::convert::TryFrom<String> for CrousRegion {
+            type Error = String;
+            fn try_from(s: String) -> ::std::result::Result<Self, Self::Error> {
+                s.parse()
+            }
+        }
+
+        impl ::std::convert::TryFrom<&str> for CrousRegion {
+            type Error = String;
+            fn try_from(s: &str) -> ::std::result::Result<Self, Self::Error> {
+                s.parse()
             }
         }
     }

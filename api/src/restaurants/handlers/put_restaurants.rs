@@ -1,6 +1,8 @@
+use axum::extract::Path;
 use axum::{Json, extract::State, http::StatusCode};
 use htc::id::build_id;
 use htc::models::Entity;
+use htc::regions::CrousRegion;
 use tracing::error;
 use htc::models::restaurants::{Restaurant, RestaurantSchema};
 use htc::verifiable::SignedPayload;
@@ -12,7 +14,7 @@ use crate::{
 
 #[utoipa::path(
     put,
-    path = "/restaurants",
+    path = "/{region}/restaurants",
     tag = "Restaurants",
     request_body = SignedPayload<Vec<RestaurantSchema>>,
     responses(
@@ -21,12 +23,15 @@ use crate::{
     )
 )]
 pub async fn put_restaurant<A>(
+    Path(region): Path<String>,
     State(state): State<A>,
     Json(body): Json<SignedPayload<Vec<RestaurantSchema>>>,
 ) -> Result<StatusCode, ApiError>
 where
     A: App + Send + Sync + Clone
 {
+
+    let region: CrousRegion = region.parse().map_err(|_| ApiError::NotFound(format!("Unknown region: {}", region)))?;
     let admin = state.get_admin(&body.author).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
@@ -37,7 +42,7 @@ where
         ApiError::Unauthorized(e.to_string())
     })?;
 
-    let batch = state.create_batch(Entity::Restaurants, admin.admin_id).await.map_err(|e| {
+    let batch = state.create_batch(Entity::Restaurants, admin.admin_id, region).await.map_err(|e| {
         error!("{}", e.to_string());
         ApiError::Unauthorized(e.to_string())
     })?;

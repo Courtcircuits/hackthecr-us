@@ -1,22 +1,15 @@
+use futures::future::join_all;
+use htc::{
+    models::{meals::MealSchema, restaurants::RestaurantSchema}, regions::CrousRegion, sources::meals::RestaurantPageScrapedData
+};
+use scraper::{Scraper, restaurant_page::RestaurantPageScraper};
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
 };
-use futures::future::join_all;
-use htc::{
-    models::{
-        meals::{MealSchema},
-        restaurants::RestaurantSchema,
-    },
-    sources::meals::RestaurantPageScrapedData,
-};
-use scraper::{
-    Scraper,
-    restaurant_page::{RestaurantPageScraper},
-};
 use thiserror::Error;
 
-use crate::{client::HTCClient, crous::CrousRegion};
+use crate::client::HTCClient;
 
 pub struct MealsAction {
     pub target: CrousRegion,
@@ -43,13 +36,11 @@ impl MealsAction {
     pub async fn collect(&self) -> Result<Vec<Vec<MealSchema>>, MealsActionResult> {
         let restaurants_url: Vec<RestaurantSchema> = self
             .client
-            .get_restaurants()
+            .get_restaurants(self.target)
             .await
             .map_err(|e| MealsActionResult::Failure(e.to_string()))?;
 
-        let meals_scrape_futures = restaurants_url
-            .into_iter()
-            .map(Self::collect_restaurant);
+        let meals_scrape_futures = restaurants_url.into_iter().map(Self::collect_restaurant);
 
         let results = join_all(meals_scrape_futures).await;
         let mut meals = Vec::new();
@@ -83,23 +74,20 @@ impl MealsAction {
 
         if self.dry_run {
             let table_data: Vec<&MealSchema> = meals.iter().flatten().collect();
-            let table_data= table_data.iter().map(|meal| {
-                DisplayableMeal {
-                    meal_type: meal.meal_type.clone(),
-                    foodies: meal.foodies.clone().unwrap_or("".to_string()),
-                    date: meal.date.clone().unwrap_or("".to_string()),
-                    restaurant_id: meal.restaurant_id.to_string()
-
-                }
+            let table_data = table_data.iter().map(|meal| DisplayableMeal {
+                meal_type: meal.meal_type.clone(),
+                foodies: meal.foodies.clone().unwrap_or("".to_string()),
+                date: meal.date.clone().unwrap_or("".to_string()),
+                restaurant_id: meal.restaurant_id.to_string(),
             });
 
             let mut table = Table::new(table_data);
             table.with(Style::modern());
             table.modify(Columns::first(), Alignment::right());
             println!("{}", table);
-        }else {
+        } else {
             for meals_by_restaurant in meals {
-                let _ = self.client.put_meals(meals_by_restaurant).await;
+                let _ = self.client.put_meals(meals_by_restaurant, self.target).await;
             }
         }
         Ok(())
@@ -111,5 +99,5 @@ pub struct DisplayableMeal {
     pub meal_type: String,
     pub foodies: String,
     pub date: String,
-    pub restaurant_id: String
+    pub restaurant_id: String,
 }
