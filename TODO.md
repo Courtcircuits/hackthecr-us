@@ -1,0 +1,1 @@
+- Add ACIDITY on resturants and meals scraping id by inserting the scraping id and data at the same time using transactions : https://docs.rs/sqlx/latest/sqlx/struct.Transaction.html 

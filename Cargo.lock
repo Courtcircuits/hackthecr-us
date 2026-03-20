@@ -385,8 +385,10 @@ name = "cli"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "chrono",
  "clap 4.5.59",
  "color-print",
+ "cron-parser",
  "futures",
  "htc",
  "rcgen",
@@ -504,6 +506,15 @@ name = "crc-catalog"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19d374276b40fb8bbdee95aef7c7fa6b5316ec764510eb64b8dd0e2ed0d7e7f5"
+
+[[package]]
+name = "cron-parser"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37c7f1b34284f31889c32438c00025b03600fab466c156d7542114fd5e80b348"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "crossbeam-queue"
@@ -3165,6 +3176,7 @@ dependencies = [
  "libc",
  "mio 1.1.1",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",

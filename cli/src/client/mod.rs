@@ -1,4 +1,4 @@
-use color_print::{cprint, cprintln};
+use color_print::cprintln;
 use htc::{
     models::{meals::MealSchema, restaurants::RestaurantSchema},
     regions::CrousRegion,
@@ -6,6 +6,7 @@ use htc::{
 };
 use reqwest::Client;
 
+#[derive(Clone)]
 pub struct HTCClient {
     pub url: String,
     pub client: Client,

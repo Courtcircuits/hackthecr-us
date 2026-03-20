@@ -5,7 +5,11 @@ use color_print::cprintln;
 use htc::regions::CrousRegion;
 
 use crate::{
-    actions::{meals::{MealsAction}, restaurants::RestaurantsAction}, client::HTCClient, config::Config
+    actions::{
+        Executable, meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
+    },
+    client::HTCClient,
+    config::Config,
 };
 
 pub mod actions;
@@ -74,10 +78,7 @@ async fn main() {
                     new_config
                         .write(&config_path)
                         .expect("Couldn't write config");
-                    println!(
-                        "Configuration wrote at : {}",
-                        config_path.to_str().unwrap()
-                    );
+                    println!("Configuration wrote at : {}", config_path.to_str().unwrap());
                 }
                 return;
             }
@@ -88,6 +89,7 @@ async fn main() {
         }
     };
 
+    let cron_config = config.schedule;
     let client = HTCClient::new(config.server, config.client_key_data, config.user);
 
     match args.command {
@@ -98,7 +100,9 @@ async fn main() {
             let action = RestaurantsAction::new(target, dry_run, client);
             match action.execute().await {
                 Ok(()) => {
-                    cprintln!("✅ <green>Successfully collected and stored restaurant data.</green>");
+                    cprintln!(
+                        "✅ <green>Successfully collected and stored restaurant data.</green>"
+                    );
                 }
                 Err(e) => {
                     cprintln!("💣 <red>Failed to collect restaurant data: {}</red>", e);
@@ -109,7 +113,9 @@ async fn main() {
             let action = MealsAction::new(target, dry_run, client);
             match action.execute().await {
                 Ok(()) => {
-                    cprintln!("✅ <green>Successfully collected and stored restaurant data.</green>");
+                    cprintln!(
+                        "✅ <green>Successfully collected and stored restaurant data.</green>"
+                    );
                 }
                 Err(e) => {
                     cprintln!("💣 <red>Failed to collect restaurant data: {}</red>", e);
@@ -122,9 +128,20 @@ async fn main() {
                 target, dry_run
             );
         }
-        Command::Schedule {} => {
-            todo!("Implement scheduling")
-        }
-        Command::Generate { user: _user, dry_run: _dry_run } => {}
+        Command::Schedule {} => match cron_config {
+            Some(config) => {
+                let schedule = ScheduleAction::try_from_config(config, client).map_err(|e| {
+                    cprintln!("💣 <red>{}</red>", e.to_string());
+                }).unwrap();
+                let _ = schedule.schedule().await;
+            }
+            None => {
+                cprintln!("💣 <red>No schedule config</red>");
+            }
+        },
+        Command::Generate {
+            user: _user,
+            dry_run: _dry_run,
+        } => {}
     }
 }

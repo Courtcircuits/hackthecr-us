@@ -15,12 +15,20 @@ pub struct Config {
     pub schedule: Option<CronConfig>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct CronConfig {
-    pub restaurants: Option<String>,
-    pub schools: Option<String>,
-    pub meals: Option<String>,
+    pub restaurants: Option<EntityScheduleConfig>,
+    pub schools: Option<EntityScheduleConfig>,
+    pub meals: Option<EntityScheduleConfig>,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct EntityScheduleConfig {
+    pub schedule: String,
+    pub target: Vec<String>,
+}
+
+
 
 #[derive(Debug, thiserror::Error)]
 pub enum ConfigError<'a> {
@@ -34,6 +42,9 @@ pub enum ConfigError<'a> {
     WriteUnable(String, String),
     #[error("Certificate generation failed : {0}")]
     CertificateGenFailed(String),
+    #[error("Unknown region: {0}")]
+    UnknownRegion(String),
+    
 }
 
 impl Config {

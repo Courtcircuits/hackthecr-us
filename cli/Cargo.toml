@@ -9,7 +9,8 @@ scraper = { path = "../scraper" }
 tabled = "0.20.0"
 reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }
 base64.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["signal"] }
+chrono = { version = "0.4", features = ["clock"], default-features = false }
 thiserror.workspace = true
 clap.workspace = true
 serde.workspace = true
@@ -19,3 +20,4 @@ rcgen = "0.14.7"
 futures = "0.3.32"
 zenity = "3.6.1"
 color-print = "0.3.7"
+cron-parser = "0.11.2"

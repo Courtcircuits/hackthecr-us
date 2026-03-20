@@ -5,8 +5,6 @@ use std::sync::{
 
 use futures::future::join_all;
 use htc::{models::restaurants::RestaurantSchema, regions::{CrousRegion, CrousUrl}, sources::restaurants::RestaurantScrapedData};
-use thiserror::Error;
-
 use scraper::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
@@ -17,7 +15,7 @@ use tabled::{
 use zenity::progress::{Frames, ProgressBar};
 
 use crate::{
-    client::HTCClient,
+    actions::{Executable, ExecutionResult}, client::HTCClient
 };
 
 pub struct RestaurantsAction {
@@ -27,10 +25,36 @@ pub struct RestaurantsAction {
     pub client: HTCClient,
 }
 
-#[derive(Debug, Error)]
-pub enum RestaurantsActionResult {
-    #[error("RestaurantsAction failed: {0}")]
-    Failure(String),
+impl Executable for RestaurantsAction {
+    fn execute(&self) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>> {
+        Box::pin(async move {
+            let restaurants = self.collect().await.map_err(|e| {
+                ExecutionResult::Failure(format!("Failed to collect restaurant data: {:?}", e))
+            })?;
+
+            if self.dry_run {
+                let table_data = restaurants.iter().map(|restaurant| {
+                    let restaurant: RestaurantSchema = restaurant.clone();
+                    DisplayableRestaurant {
+                        name: restaurant.name,
+                        url: restaurant.url,
+                        city: restaurant.city.unwrap_or_else(|| "N/A".to_string()),
+                        coordinates: restaurant.coordinates.unwrap_or_else(|| "N/A".to_string()),
+                        opening_hours: restaurant
+                            .opening_hours
+                            .unwrap_or_else(|| "N/A".to_string()),
+                    }
+                });
+                let mut table = Table::new(table_data);
+                table.with(Style::modern());
+                table.modify(Columns::first(), Alignment::right());
+                println!("{}", table);
+            } else {
+                let _ = self.client.put_restaurants(restaurants, self.target).await;
+            }
+            Ok(())
+        })
+    }
 }
 
 impl RestaurantsAction {
@@ -42,7 +66,7 @@ impl RestaurantsAction {
         }
     }
 
-    pub async fn collect(&self) -> Result<Vec<RestaurantSchema>, RestaurantsActionResult> {
+    pub async fn collect(&self) -> Result<Vec<RestaurantSchema>, ExecutionResult> {
         let url = CrousUrl(self.target.url().to_string()).to_list_url();
 
         let mut restaurants: Vec<RestaurantSchema> = Vec::new();
@@ -50,7 +74,7 @@ impl RestaurantsAction {
             .scrape()
             .await
             .map_err(|e| {
-                RestaurantsActionResult::Failure(format!("Failed to scrape restaurant list: {}", e))
+                ExecutionResult::Failure(format!("Failed to scrape restaurant list: {}", e))
             })?;
 
         let progress = Arc::new(ProgressBar::new(Frames::rect().set_goal(list_data.len())));
@@ -74,13 +98,13 @@ impl RestaurantsAction {
         progress_bar: Arc<ProgressBar>,
         uid: usize,
         counter: Arc<AtomicUsize>,
-    ) -> Result<RestaurantSchema, RestaurantsActionResult> {
+    ) -> Result<RestaurantSchema, ExecutionResult> {
         let url = &restaurant_desc.crous_url;
         let page_data = RestaurantPageScraper::new(url.to_string())
             .scrape()
             .await
             .map_err(|e| {
-                RestaurantsActionResult::Failure(format!(
+                ExecutionResult::Failure(format!(
                     "Failed to scrape restaurant page at {}: {}",
                     url, e
                 ))
@@ -95,36 +119,6 @@ impl RestaurantsAction {
         progress_bar.set(&uid, &completed);
 
         Ok(scraped_data.into())
-    }
-
-    pub async fn execute(&self) -> Result<(), RestaurantsActionResult> {
-        let restaurants = self.collect().await.map_err(|e| {
-            RestaurantsActionResult::Failure(format!("Failed to collect restaurant data: {:?}", e))
-        })?;
-
-        if self.dry_run {
-            let table_data = restaurants.iter().map(|restaurant| {
-                let restaurant: RestaurantSchema = restaurant.clone();
-                DisplayableRestaurant {
-                    name: restaurant.name,
-                    url: restaurant.url,
-                    city: restaurant.city.unwrap_or_else(|| "N/A".to_string()),
-                    coordinates: restaurant.coordinates.unwrap_or_else(|| "N/A".to_string()),
-                    opening_hours: restaurant
-                        .opening_hours
-                        .unwrap_or_else(|| "N/A".to_string()),
-                }
-            });
-            let mut table = Table::new(table_data);
-            table.with(Style::modern());
-            table.modify(Columns::first(), Alignment::right());
-            println!("{}", table);
-        } else {
-            // Here you would normally save the restaurants to a database
-            // For this example, we'll just print them out
-            let _ = self.client.put_restaurants(restaurants, self.target).await;
-        }
-        Ok(())
     }
 }
 

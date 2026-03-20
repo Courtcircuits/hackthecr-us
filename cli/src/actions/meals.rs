@@ -9,7 +9,7 @@ use tabled::{
 };
 use thiserror::Error;
 
-use crate::client::HTCClient;
+use crate::{actions::{Executable, ExecutionResult}, client::HTCClient};
 
 pub struct MealsAction {
     pub target: CrousRegion,
@@ -67,7 +67,7 @@ impl MealsAction {
         Ok(meals)
     }
 
-    pub async fn execute(&self) -> Result<(), MealsActionResult> {
+    async fn execute_inner(&self) -> Result<(), MealsActionResult> {
         let meals = self.collect().await.map_err(|e| {
             MealsActionResult::Failure(format!("Failed to collect restaurant page data : {:?}", e))
         })?;
@@ -91,6 +91,14 @@ impl MealsAction {
             }
         }
         Ok(())
+    }
+}
+
+impl Executable for MealsAction {
+    fn execute(&self) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>> {
+        Box::pin(async move {
+            self.execute_inner().await.map_err(|e| ExecutionResult::Failure(e.to_string()))
+        })
     }
 }
 
