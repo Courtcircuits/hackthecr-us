@@ -5,6 +5,7 @@ use htc::{
         Entity,
         admins::Admin,
         meals::{Meal, MealModel as _, MealModelError, MealSchema},
+        scrape_batch::ScrapedBatchModelError,
     },
     regions::CrousRegion,
 };
@@ -46,7 +47,7 @@ impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
         checksum: String,
     ) -> Result<(), MealModelError> {
         let Some(first_meal) = meals.first() else {
-            return Err(MealModelError::NotFound);
+            return Err(MealModelError::EmptyBody);
         };
 
         let restaurant_id = first_meal.restaurant_id.clone();
@@ -59,7 +60,10 @@ impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
                 checksum,
             )
             .await
-            .unwrap();
+            .map_err(|e| match e {
+                ScrapedBatchModelError::NoDriftWithCurrentBatch => MealModelError::SyncSkipped,
+                _ => MealModelError::DatabaseError(e.to_string()),
+            })?;
 
         let meals: Vec<Meal> = meals
             .iter()
@@ -76,6 +80,10 @@ impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
         for meal in meals {
             self.pool.create_meal(meal, &mut tx).await?;
         }
+
+        tx.commit()
+            .await
+            .map_err(|e| MealModelError::DatabaseError(e.to_string()))?;
         Ok(())
     }
 

@@ -45,20 +45,18 @@ impl From<&Meal> for MealSchema {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum MealModelError {
+    #[error("Empty body")]
+    EmptyBody,
+    #[error("Meal not found")]
     NotFound,
+    #[error("Internal error : {0}")]
     DatabaseError(String),
+    #[error("Sync skipped")]
+    SyncSkipped
 }
 
-impl std::fmt::Display for MealModelError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            MealModelError::NotFound => write!(f, "Meal not found"),
-            MealModelError::DatabaseError(e) => write!(f, "Database error: {}", e),
-        }
-    }
-}
 
 pub trait MealModel {
     fn create_meal(&self, meal: Meal, tx: &mut PgTransaction<'_>) -> impl Future<Output = Result<(), MealModelError>> + Send;
