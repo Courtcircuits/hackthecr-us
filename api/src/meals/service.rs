@@ -1,21 +1,30 @@
 use std::sync::Arc;
 
-use htc::{models::{
-    meals::{Meal, MealModel as _, MealModelError}, Entity
-}, regions::CrousRegion};
+use htc::{
+    models::{
+        Entity,
+        admins::Admin,
+        meals::{Meal, MealModel as _, MealModelError, MealSchema},
+    },
+    regions::CrousRegion,
+};
 use sqlx::PgPool;
+use uuid::Uuid;
 
 use crate::batches::service::{BatchesService, BatchesServiceImpl};
 
 pub trait MealsService {
     fn save_meals(
         &self,
-        meals: Vec<Meal>,
+        meals: &[MealSchema],
+        admin: Admin,
+        region: CrousRegion,
+        checksum: String,
     ) -> impl Future<Output = Result<(), MealModelError>> + Send;
     fn get_meals_by_restaurant_id(
         &self,
         name: String,
-        region: CrousRegion
+        region: CrousRegion,
     ) -> impl Future<Output = Result<Vec<Meal>, MealModelError>> + Send;
 }
 
@@ -29,20 +38,63 @@ where
 }
 
 impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
-    async fn save_meals(&self, meals: Vec<Meal>) -> Result<(), MealModelError> {
+    async fn save_meals(
+        &self,
+        meals: &[MealSchema],
+        admin: Admin,
+        region: CrousRegion,
+        checksum: String,
+    ) -> Result<(), MealModelError> {
+        let Some(first_meal) = meals.first() else {
+            return Err(MealModelError::NotFound);
+        };
+
+        let restaurant_id = first_meal.restaurant_id.clone();
+        let (batch, mut tx) = self
+            .batch_service
+            .create_batch(
+                Entity::Meals(restaurant_id),
+                admin.admin_id,
+                region,
+                checksum,
+            )
+            .await
+            .unwrap();
+
+        let meals: Vec<Meal> = meals
+            .iter()
+            .map(|schema| Meal {
+                meal_id: Uuid::new_v4(),
+                meal_type: schema.meal_type.clone(),
+                foodies: schema.foodies.clone(),
+                date: schema.date.clone(),
+                restaurant_id: schema.restaurant_id.clone(),
+                batch_id: batch,
+            })
+            .collect();
+
         for meal in meals {
-            self.pool.create_meal(meal).await?;
+            self.pool.create_meal(meal, &mut tx).await?;
         }
         Ok(())
     }
 
-    async fn get_meals_by_restaurant_id(&self, name: String, region: CrousRegion) -> Result<Vec<Meal>, MealModelError> {
-        let current_batch = self
+    async fn get_meals_by_restaurant_id(
+        &self,
+        name: String,
+        region: CrousRegion,
+    ) -> Result<Vec<Meal>, MealModelError> {
+        let Some(current_batch) = self
             .batch_service
-            .current_batch(Entity::Meals(name.to_string()), region)
+            .current_batch(&Entity::Meals(name.to_string()), region)
             .await
-            .map_err(|_| MealModelError::NotFound)?;
-        self.pool.get_meals_by_restaurant_id_batch(name, current_batch).await
+            .map_err(|_| MealModelError::NotFound)?
+        else {
+            return Err(MealModelError::NotFound);
+        };
+        self.pool
+            .get_meals_by_restaurant_id_batch(name, current_batch.batch_id)
+            .await
     }
 }
 

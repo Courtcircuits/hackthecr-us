@@ -47,8 +47,8 @@ where
 
     pub fn verify(&self, public_key: &str) -> Result<(&T, String), SigningError> {
         let serialized_payload = serde_json::json!(self.payload).to_string();
-        verify(serialized_payload, &self.signature, public_key)?;
-        Ok((&self.payload, self.author.clone()))
+        let digest = verify(serialized_payload, &self.signature, public_key)?;
+        Ok((&self.payload, digest))
     }
 }
 
@@ -79,27 +79,33 @@ where
     })
 }
 
-pub fn verify(payload: String, signature: &str, public_key: &str) -> Result<(), SigningError> {
+pub fn verify(payload: String, signature: &str, public_key: &str) -> Result<String, SigningError> {
+    // decode public key from b64 to bytes
     let public_key = BASE64_STANDARD
         .decode(public_key)
         .map_err(|_| SigningError::InvalidBASE64)?;
+    // convert public key to string so it can be parsed as PEM
     let public_key = str::from_utf8(&public_key)
         .map_err(|_| SigningError::InvalidBASE64)?;
+    // convert string pkey to PEM format
     let verifying_key = VerifyingKey::from_public_key_pem(public_key)
         .map_err(|e| SigningError::ParsingPublicKeyFailed(e.to_string()))?;
 
+    // decode signature to bytes
     let signature_bytes = BASE64_STANDARD
         .decode(signature)
         .map_err(|_| SigningError::InvalidSignature)?;
 
+    // parse signature to PEM 
     let signature = Signature::from_slice(&signature_bytes)
         .map_err(|_| SigningError::InvalidSignature)?;
 
     let digest = Sha256::digest(&payload);
-
     verifying_key
         .verify(&digest, &signature)
-        .map_err(|_| SigningError::InvalidSignature)
+        .map_err(|_| SigningError::InvalidSignature)?;
+    Ok(BASE64_STANDARD.encode(digest))
+
 }
 
 pub fn read_pkcs8_pem_private_key(content: &str) -> Result<SigningKey, SigningError> {

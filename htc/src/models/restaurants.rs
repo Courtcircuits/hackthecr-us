@@ -2,7 +2,7 @@ use std::future::Future;
 
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
-use sqlx::{types::Uuid, PgPool};
+use sqlx::{PgPool, PgTransaction, types::Uuid};
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -30,7 +30,6 @@ impl From<Restaurant> for RestaurantSchema {
     }
 }
 
-
 impl From<&Restaurant> for RestaurantSchema {
     fn from(restaurant: &Restaurant) -> Self {
         RestaurantSchema {
@@ -39,11 +38,10 @@ impl From<&Restaurant> for RestaurantSchema {
             url: restaurant.url.clone(),
             city: restaurant.city.clone(),
             coordinates: restaurant.coordinates.clone(),
-            opening_hours: restaurant.opening_hours.clone()
+            opening_hours: restaurant.opening_hours.clone(),
         }
     }
 }
-
 
 #[derive(Clone)]
 pub struct Restaurant {
@@ -55,7 +53,7 @@ pub struct Restaurant {
     pub opening_hours: Option<String>,
     pub created_at: Option<NaiveDateTime>,
     pub updated_at: Option<NaiveDateTime>,
-    pub batch_id: Uuid
+    pub batch_id: Uuid,
 }
 
 #[derive(Error, Debug)]
@@ -64,12 +62,15 @@ pub enum RestaurantModelError {
     NotFound,
     #[error("Database error: {0}")]
     DatabaseError(String),
+    #[error("Sync skipped")]
+    SyncSkipped
 }
 
 pub trait RestaurantModel {
     fn create_restaurant(
         &self,
         restaurant: Restaurant,
+        tx: &mut PgTransaction,
     ) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
     fn get_restaurant_by_id(
         &self,
@@ -77,12 +78,16 @@ pub trait RestaurantModel {
     ) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
     fn get_all_restaurants_batch(
         &self,
-        batch: Uuid
+        batch: Uuid,
     ) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
 }
 
 impl RestaurantModel for PgPool {
-    async fn create_restaurant(&self, restaurant: Restaurant) -> Result<(), RestaurantModelError> {
+    async fn create_restaurant(
+        &self,
+        restaurant: Restaurant,
+        tx: &mut PgTransaction<'_>,
+    ) -> Result<(), RestaurantModelError> {
         sqlx::query!(
             "INSERT INTO restaurants (restaurant_id, name, url, city, coordinates, opening_hours, batch_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             restaurant.restaurant_id,
@@ -93,17 +98,14 @@ impl RestaurantModel for PgPool {
             restaurant.opening_hours,
             restaurant.batch_id
         )
-        .execute(self)
+        .execute(&mut **tx)
         .await
         .map_err(|e| RestaurantModelError::DatabaseError(e.to_string()))?;
 
         Ok(())
     }
 
-    async fn get_restaurant_by_id(
-        &self,
-        id: String,
-    ) -> Result<Restaurant, RestaurantModelError> {
+    async fn get_restaurant_by_id(&self, id: String) -> Result<Restaurant, RestaurantModelError> {
         let row = sqlx::query!(
             "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at, batch_id FROM restaurants WHERE restaurant_id = $1",
             id
@@ -122,11 +124,14 @@ impl RestaurantModel for PgPool {
             opening_hours: row.opening_hours,
             created_at: row.created_at,
             updated_at: row.updated_at,
-            batch_id: row.batch_id
+            batch_id: row.batch_id,
         })
     }
 
-    async fn get_all_restaurants_batch(&self, batch_id: Uuid) -> Result<Vec<Restaurant>, RestaurantModelError> {
+    async fn get_all_restaurants_batch(
+        &self,
+        batch_id: Uuid,
+    ) -> Result<Vec<Restaurant>, RestaurantModelError> {
         let rows = sqlx::query!(
             "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at, batch_id FROM restaurants WHERE batch_id = $1",
             batch_id
@@ -146,7 +151,7 @@ impl RestaurantModel for PgPool {
                 opening_hours: row.opening_hours,
                 created_at: row.created_at,
                 updated_at: row.updated_at,
-                batch_id: row.batch_id
+                batch_id: row.batch_id,
             })
             .collect();
 

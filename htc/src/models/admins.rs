@@ -1,6 +1,7 @@
 use sqlx::{PgPool, types::Uuid};
 use thiserror::Error;
 
+#[derive(Clone)]
 pub struct Admin {
     pub admin_id: Uuid,
     pub name: String,

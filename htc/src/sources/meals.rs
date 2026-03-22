@@ -63,7 +63,7 @@ mod tests {
                 coordinates: (48.5734, 7.7521),
             },
         };
-        let meals: Vec<MealSchema> = scraped.try_into().unwrap();
+        let meals: Vec<MealSchema> = scraped.into();
         assert!(meals.is_empty());
     }
 

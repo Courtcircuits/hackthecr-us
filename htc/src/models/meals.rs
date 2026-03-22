@@ -1,7 +1,7 @@
 use std::future::Future;
 
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{PgPool, PgTransaction};
 use sqlx::types::Uuid;
 use utoipa::ToSchema;
 
@@ -61,12 +61,12 @@ impl std::fmt::Display for MealModelError {
 }
 
 pub trait MealModel {
-    fn create_meal(&self, meal: Meal) -> impl Future<Output = Result<(), MealModelError>> + Send;
+    fn create_meal(&self, meal: Meal, tx: &mut PgTransaction<'_>) -> impl Future<Output = Result<(), MealModelError>> + Send;
     fn get_meals_by_restaurant_id_batch(&self, restaurant_name: String, batch_id: Uuid) -> impl Future<Output = Result<Vec<Meal>, MealModelError>> + Send;
 }
 
 impl MealModel for PgPool {
-    async fn create_meal(&self, meal: Meal) -> Result<(), MealModelError> {
+    async fn create_meal(&self, meal: Meal, tx: &mut PgTransaction<'_>) -> Result<(), MealModelError> {
         sqlx::query!(
             "INSERT INTO meals (meal_id, meal_type, foodies, date, restaurant_id, batch_id) VALUES ($1, $2, $3, $4, $5, $6)",
             meal.meal_id,
@@ -76,7 +76,7 @@ impl MealModel for PgPool {
             meal.restaurant_id,
             meal.batch_id
         )
-        .execute(self)
+        .execute(&mut **tx)
         .await
         .map_err(|e| MealModelError::DatabaseError(e.to_string()))?;
 
