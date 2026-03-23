@@ -1,25 +1,28 @@
-use std::sync::Arc;
+use std::{sync::Arc};
 
 use axum::{
     Router,
     http::{HeaderValue, Method, header},
 };
-use tokio::net::TcpListener;
+use tokio::{net::TcpListener, task::JoinHandle};
 use tower_http::cors::CorsLayer;
 use tracing::info;
 
 use crate::{config::Config, error::ApiError};
 
-pub async fn serve(app: Router, config: Arc<Config>) -> Result<(), ApiError> {
+pub async fn serve(app: Router, config: Arc<Config>) -> Result<JoinHandle<()>, ApiError> {
     let listener = TcpListener::bind(format!("0.0.0.0:{}", config.port))
         .await
-        .map_err(|e| ApiError::InternalServerError(format!("Failed to bind to port {}: {}", config.port, e)))?;
+        .map_err(|e| {
+            ApiError::InternalServerError(format!("Failed to bind to port {}: {}", config.port, e))
+        })?;
 
     info!("Starting server on 0.0.0.0:{}", config.port);
-    axum::serve(listener, app)
-        .await
-        .map_err(|e| ApiError::InternalServerError(format!("Server error: {}", e)))?;
-    Ok(())
+
+    Ok(tokio::spawn(async move {
+        axum::serve(listener, app)
+            .await.unwrap();
+    }))
 }
 
 pub fn default_cors_layer(origins: &[String]) -> Result<CorsLayer, ApiError> {
@@ -29,9 +32,9 @@ pub fn default_cors_layer(origins: &[String]) -> Result<CorsLayer, ApiError> {
     let origins = origins
         .iter()
         .map(|origin| {
-            origin
-                .parse::<HeaderValue>()
-                .map_err(|e| ApiError::InternalServerError(format!("Invalid origin '{}': {}", origin, e)))
+            origin.parse::<HeaderValue>().map_err(|e| {
+                ApiError::InternalServerError(format!("Invalid origin '{}': {}", origin, e))
+            })
         })
         .collect::<Result<Vec<HeaderValue>, ApiError>>()?;
 

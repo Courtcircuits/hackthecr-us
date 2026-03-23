@@ -13,6 +13,9 @@ pub struct Config {
     pub database_url: String,
 
     #[clap(env, long, help = "Default admin public key")]
-    pub admin_public_key: String
+    pub admin_public_key: String,
+
+    #[clap(env, long, help = "Bearer token required to connect to the SSE /events endpoint")]
+    pub sse_token: String,
 }
 

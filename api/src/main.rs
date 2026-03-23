@@ -1,5 +1,5 @@
+use ::tracing::{error, info};
 use std::sync::Arc;
-use tracing::{error, info};
 
 use clap::Parser as _;
 
@@ -8,9 +8,12 @@ use crate::{
     app::AppImpl,
     batches::service::BatchesServiceImpl,
     config::Config,
+    events::{EventListener, scraping_channel::ScrapingChannel},
     meals::service::MealsServiceImpl,
     restaurants::service::RestaurantsServiceImpl,
     router::root,
+    sse::SseState,
+    tracing::init_tracing_subscriber,
 };
 
 pub mod admins;
@@ -18,14 +21,17 @@ pub mod app;
 pub mod batches;
 pub mod config;
 pub mod error;
+pub mod events;
 pub mod http;
 pub mod meals;
 pub mod restaurants;
 pub mod router;
+pub mod sse;
+pub mod tracing;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt::init();
+    let _guard = init_tracing_subscriber();
     dotenv::dotenv().ok();
 
     let config = Config::parse();
@@ -46,12 +52,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .create_default_admin_key(&key)
             .await
             .map_err(|e| {
-                tracing::error!("{}", e.to_string());
+                error!("{}", e.to_string());
             });
         info!("Default admin key inserted");
     } else {
         info!("No default key found");
     }
+
+    let (sse_state, sse_sender) = SseState::new(config.sse_token.clone());
+    let sse_state = Arc::new(sse_state);
+
+    let event_handler = Arc::new(ScrapingChannel { sender: sse_sender });
+    let event_listener = EventListener::new(event_handler, pool.clone());
 
     let app = AppImpl::new(
         restaurants_service,
@@ -60,14 +72,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         batch_service,
         config.clone(),
     );
-    let root = root(app).await.map_err(|e| {
+    let root = root(app, sse_state).await.map_err(|e| {
         error!("Failed to create router: {}", e);
         e
     })?;
 
-    let _ = crate::http::serve(root, config)
+    let http_server = crate::http::serve(root, config)
         .await
-        .inspect_err(|e| error!("{}", e));
+        .inspect_err(|e| error!("{}", e))?;
+
+    let listener_handle = event_listener
+        .listen("scraping_channel".to_string())
+        .await
+        .map_err(|e| {
+            error!("Failed to create listener: {}", e);
+            e
+        })?;
+
+    let (http_result, listener_result) = tokio::join!(http_server, listener_handle);
+    if let Err(e) = http_result {
+        error!("HTTP server error: {}", e);
+    }
+    if let Err(e) = listener_result {
+        error!("Event listener error: {}", e);
+    }
 
     Ok(())
 }

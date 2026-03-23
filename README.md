@@ -20,3 +20,4 @@ The code base is organized into five main folders:
 - **web** : the folder that contains the code for the web application.
 - **core** : the folder that contains the shared code between the API and the scraper, such as the database models and some data processing logic.
 - **cli** : this contains the code for `crousctl`, a command-line tool to administrate hack the crous but also to run the scraper from any machine.
+- **crousty** : this contains the code for Hack The Crous discord bot. It is used to alert you if there are any new meals.

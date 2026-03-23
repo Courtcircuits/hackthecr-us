@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["api", "cli", "htc", "macros", "scraper"]
+members = ["api", "cli", "crousty", "htc", "macros", "scraper"]
 
 [workspace.package]
 edition="2024"
@@ -18,3 +18,9 @@ clap = { version = "4.5.59", features = ["derive", "env"] }
 utoipa = "5.4.0"
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 base64 = "0.22.1"
+opentelemetry-semantic-conventions = { version = "0.31.0", features = ["semconv_experimental"] }
+opentelemetry-otlp = { version = "0.31.0", features = ["grpc-tonic"] }
+opentelemetry = "0.31.0"
+opentelemetry_sdk = "0.31.0"
+tracing-opentelemetry = "0.32"
+tracing-core = "0.1.36"

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::Router;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::Level;
@@ -18,6 +20,7 @@ use crate::{
         },
         router::restaurants_router,
     },
+    sse::{SseState, sse_router},
 };
 
 #[derive(OpenApi)]
@@ -27,7 +30,7 @@ use crate::{
 )]
 pub struct ApiDoc;
 
-pub async fn root<A>(app: A) -> Result<Router, ApiError>
+pub async fn root<A>(app: A, sse_state: Arc<SseState>) -> Result<Router, ApiError>
 where
     A: App + Send + Sync + Clone + 'static,
 {
@@ -37,6 +40,7 @@ where
         .merge(Scalar::with_url("/docs", openapi))
         .merge(restaurants_router(app.clone()))
         .merge(meals_router(app))
+        .merge(sse_router(sse_state))
         .layer(default_cors_layer(&origins)?)
         .layer(
             TraceLayer::new_for_http()

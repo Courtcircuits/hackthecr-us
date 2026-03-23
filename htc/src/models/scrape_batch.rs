@@ -1,11 +1,12 @@
 use std::str::FromStr;
 
 use chrono::NaiveDateTime;
+use serde::Deserialize;
 use sqlx::{PgPool, PgTransaction, types::Uuid};
 
 use crate::{models::Entity, regions::CrousRegion};
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, serde::Serialize)]
 pub struct ScrapeBatch {
     pub batch_id: Uuid,
     pub entity: Entity,

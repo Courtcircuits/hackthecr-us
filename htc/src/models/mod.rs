@@ -7,7 +7,8 @@ pub mod restaurants;
 pub mod schools;
 pub mod scrape_batch;
 
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Entity {
     Restaurants,
     Meals(String),

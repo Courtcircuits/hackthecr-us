@@ -61,3 +61,24 @@ CREATE TABLE IF NOT EXISTS keywords(
 		category VARCHAR(100) NOT NULL
 );
 
+
+-- Notify
+
+CREATE OR REPLACE FUNCTION notify_scraped() RETURNS TRIGGER AS $$
+BEGIN
+		PERFORM pg_notify(
+				'scraping_channel',
+				json_build_object(
+						'operation', TG_OP,
+						'table', TG_TABLE_NAME,
+						'data', row_to_json(NEW),
+						'entity', NEW.entity
+				)::text
+		);
+		RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER notify_scraped_trigger
+		AFTER INSERT OR UPDATE ON scrape_batch
+		FOR EACH ROW EXECUTE PROCEDURE notify_scraped();
