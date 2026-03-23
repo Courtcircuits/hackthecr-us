@@ -24,20 +24,30 @@ pub fn generate_crous_enum(input: TokenStream) -> TokenStream {
     let path_lit = parse_macro_input!(input as LitStr);
     let relative_path = path_lit.value();
 
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
     let full_path = std::path::Path::new(&manifest_dir).join(&relative_path);
 
     let content = std::fs::read_to_string(&full_path).unwrap_or_else(|e| {
-        panic!("generate_crous_enum: failed to read {}: {}", full_path.display(), e)
+        panic!(
+            "generate_crous_enum: failed to read {}: {}",
+            full_path.display(),
+            e
+        )
     });
 
     let json: serde_json::Value = serde_json::from_str(&content).unwrap_or_else(|e| {
-        panic!("generate_crous_enum: failed to parse JSON at {}: {}", full_path.display(), e)
+        panic!(
+            "generate_crous_enum: failed to parse JSON at {}: {}",
+            full_path.display(),
+            e
+        )
     });
 
     let obj = json.as_object().unwrap_or_else(|| {
-        panic!("generate_crous_enum: JSON root at {} must be an object", full_path.display())
+        panic!(
+            "generate_crous_enum: JSON root at {} must be an object",
+            full_path.display()
+        )
     });
 
     let variants: Vec<_> = obj
@@ -131,20 +141,30 @@ pub fn generate_crous_data(input: TokenStream) -> TokenStream {
     let path_lit = parse_macro_input!(input as LitStr);
     let relative_path = path_lit.value();
 
-    let manifest_dir =
-        std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set");
     let full_path = std::path::Path::new(&manifest_dir).join(&relative_path);
 
     let content = std::fs::read_to_string(&full_path).unwrap_or_else(|e| {
-        panic!("generate_crous_data: failed to read {}: {}", full_path.display(), e)
+        panic!(
+            "generate_crous_data: failed to read {}: {}",
+            full_path.display(),
+            e
+        )
     });
 
     let json: serde_json::Value = serde_json::from_str(&content).unwrap_or_else(|e| {
-        panic!("generate_crous_data: failed to parse JSON at {}: {}", full_path.display(), e)
+        panic!(
+            "generate_crous_data: failed to parse JSON at {}: {}",
+            full_path.display(),
+            e
+        )
     });
 
     let obj = json.as_object().unwrap_or_else(|| {
-        panic!("generate_crous_data: JSON root at {} must be an object", full_path.display())
+        panic!(
+            "generate_crous_data: JSON root at {} must be an object",
+            full_path.display()
+        )
     });
 
     let fields: Vec<_> = obj

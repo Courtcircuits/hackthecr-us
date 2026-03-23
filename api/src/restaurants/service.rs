@@ -12,6 +12,7 @@ use htc::{
     regions::CrousRegion,
 };
 use sqlx::PgPool;
+use tracing::instrument;
 
 use crate::batches::service::{BatchesService, BatchesServiceImpl};
 
@@ -43,6 +44,7 @@ where
 }
 
 impl RestaurantsService for RestaurantsServiceImpl<BatchesServiceImpl> {
+    #[instrument(skip(self), fields(region=%region), err)]
     async fn save_restaurants(
         &self,
         restaurants: &[RestaurantSchema],

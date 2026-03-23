@@ -1,7 +1,7 @@
 use sqlx::{PgPool, types::Uuid};
 use thiserror::Error;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Admin {
     pub admin_id: Uuid,
     pub name: String,
@@ -15,7 +15,7 @@ pub enum AdminErrors {
     #[error("Unknown admin model error : {0}")]
     UnknownError(String),
     #[error("Admin {0} not found: {1}")]
-    NotFound(String, String)
+    NotFound(String, String),
 }
 
 pub trait AdminModel {
@@ -39,15 +39,18 @@ impl AdminModel for PgPool {
     }
 
     async fn get_admin(&self, name: String) -> Result<Admin, AdminErrors> {
-        let row = sqlx::query!("SELECT admin_id, ssh_key, name FROM admins WHERE name = $1", name)
-            .fetch_one(self)
-            .await
-            .map_err(|e| AdminErrors::NotFound(name, e.to_string()))?;
+        let row = sqlx::query!(
+            "SELECT admin_id, ssh_key, name FROM admins WHERE name = $1",
+            name
+        )
+        .fetch_one(self)
+        .await
+        .map_err(|e| AdminErrors::NotFound(name, e.to_string()))?;
 
         let admin: Admin = Admin {
             ssh_key: row.ssh_key,
             admin_id: row.admin_id,
-            name: row.name
+            name: row.name,
         };
 
         Ok(admin)

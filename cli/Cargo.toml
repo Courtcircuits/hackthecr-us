@@ -7,7 +7,7 @@ edition = "2024"
 htc = { package = "htc", path = "../htc" }
 scraper = { path = "../scraper" }
 tabled = "0.20.0"
-reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }
+reqwest.workspace = true
 base64.workspace = true
 tokio = { workspace = true, features = ["signal"] }
 chrono = { version = "0.4", features = ["clock"], default-features = false }

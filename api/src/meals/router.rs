@@ -1,10 +1,16 @@
-use axum::{routing::{get, put}, Router};
+use axum::{
+    Router,
+    routing::{get, put},
+};
 
-use crate::{app::App, meals::handlers::{get_meals::get_meals, put_meals::put_meals}};
+use crate::{
+    app::App,
+    meals::handlers::{get_meals::get_meals, put_meals::put_meals},
+};
 
 pub fn meals_router<A>(app: A) -> Router
 where
-    A: App + Send + Sync + Clone + 'static
+    A: App + Send + Sync + Clone + 'static,
 {
     Router::new()
         .route("/{region}/meals", put(put_meals::<A>))

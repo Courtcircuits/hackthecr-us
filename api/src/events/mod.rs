@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 pub mod scraping_channel;
 
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{Deserialize, de::DeserializeOwned};
 use sqlx::{PgPool, postgres::PgListener};
-use tracing::error;
+use tracing::{error, instrument};
 
 pub trait EventHandler {
     type Input: DeserializeOwned + Send;
@@ -23,7 +23,6 @@ where
     pool: Arc<PgPool>,
 }
 
-
 #[derive(thiserror::Error, Debug)]
 pub enum EventError {
     #[error("Couldn't listen : {0}")]
@@ -36,12 +35,10 @@ impl<H> EventListener<H>
 where
     H: EventHandler + Send + Sync + 'static,
 {
-    pub fn new(handler: Arc<H>, pool: Arc<PgPool>) -> Self{
-        Self {
-            handler,
-            pool
-        }
+    pub fn new(handler: Arc<H>, pool: Arc<PgPool>) -> Self {
+        Self { handler, pool }
     }
+    #[instrument(skip(self), fields(topic=topic), err)]
     pub async fn listen(
         &self,
         topic: String,
@@ -62,7 +59,11 @@ where
                 };
                 let payload: Notification<H::Input> = serde_json::from_str(notification.payload())
                     .map_err(|e| {
-                        error!("Couldn't parse {:#?} because of {}", notification.payload(), e.to_string());
+                        error!(
+                            "Couldn't parse {:#?} because of {}",
+                            notification.payload(),
+                            e.to_string()
+                        );
                         EventError::CouldntParse(e.to_string())
                     })?;
                 let handler = handler.clone();
@@ -74,8 +75,6 @@ where
         }))
     }
 }
-
-
 
 #[derive(Deserialize)]
 #[allow(dead_code)]

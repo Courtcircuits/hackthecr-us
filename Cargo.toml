@@ -24,3 +24,4 @@ opentelemetry = "0.31.0"
 opentelemetry_sdk = "0.31.0"
 tracing-opentelemetry = "0.32"
 tracing-core = "0.1.36"
+reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }

@@ -1,10 +1,13 @@
 use base64::prelude::*;
 use ed25519_dalek::ed25519::signature::SignerMut;
-use ed25519_dalek::{Signature, SigningKey, Verifier, VerifyingKey, pkcs8::DecodePrivateKey as _, pkcs8::spki::DecodePublicKey as _};
-use utoipa::ToSchema;
+use ed25519_dalek::{
+    Signature, SigningKey, Verifier, VerifyingKey, pkcs8::DecodePrivateKey as _,
+    pkcs8::spki::DecodePublicKey as _,
+};
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::path::PathBuf;
+use utoipa::ToSchema;
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -34,14 +37,18 @@ pub enum SigningError {
     #[error("Couldn't parse public key : {0}")]
     ParsingPublicKeyFailed(String),
     #[error("Invalid base64")]
-    InvalidBASE64
+    InvalidBASE64,
 }
 
-impl <T> SignedPayload<T>
+impl<T> SignedPayload<T>
 where
-    T: Serialize + DeserializeOwned + Debug + Clone
+    T: Serialize + DeserializeOwned + Debug + Clone,
 {
-    pub fn sign(payload: T, private_key: &str, author: &str) -> Result<SignedPayload<T>, SigningError> {
+    pub fn sign(
+        payload: T,
+        private_key: &str,
+        author: &str,
+    ) -> Result<SignedPayload<T>, SigningError> {
         crate::verifiable::sign(payload, private_key, author.to_string())
     }
 
@@ -66,8 +73,7 @@ where
     let private_key = BASE64_STANDARD
         .decode(private_key)
         .map_err(|_| SigningError::InvalidBASE64)?;
-    let private_key = str::from_utf8(&private_key)
-        .map_err(|_| SigningError::InvalidBASE64)?;
+    let private_key = str::from_utf8(&private_key).map_err(|_| SigningError::InvalidBASE64)?;
     let mut signing_key = read_pkcs8_pem_private_key(private_key)?;
     let signature = BASE64_STANDARD.encode(signing_key.sign(digest).to_bytes());
 
@@ -85,8 +91,7 @@ pub fn verify(payload: String, signature: &str, public_key: &str) -> Result<Stri
         .decode(public_key)
         .map_err(|_| SigningError::InvalidBASE64)?;
     // convert public key to string so it can be parsed as PEM
-    let public_key = str::from_utf8(&public_key)
-        .map_err(|_| SigningError::InvalidBASE64)?;
+    let public_key = str::from_utf8(&public_key).map_err(|_| SigningError::InvalidBASE64)?;
     // convert string pkey to PEM format
     let verifying_key = VerifyingKey::from_public_key_pem(public_key)
         .map_err(|e| SigningError::ParsingPublicKeyFailed(e.to_string()))?;
@@ -96,16 +101,15 @@ pub fn verify(payload: String, signature: &str, public_key: &str) -> Result<Stri
         .decode(signature)
         .map_err(|_| SigningError::InvalidSignature)?;
 
-    // parse signature to PEM 
-    let signature = Signature::from_slice(&signature_bytes)
-        .map_err(|_| SigningError::InvalidSignature)?;
+    // parse signature to PEM
+    let signature =
+        Signature::from_slice(&signature_bytes).map_err(|_| SigningError::InvalidSignature)?;
 
     let digest = Sha256::digest(&payload);
     verifying_key
         .verify(&digest, &signature)
         .map_err(|_| SigningError::InvalidSignature)?;
     Ok(BASE64_STANDARD.encode(digest))
-
 }
 
 pub fn read_pkcs8_pem_private_key(content: &str) -> Result<SigningKey, SigningError> {
@@ -115,7 +119,7 @@ pub fn read_pkcs8_pem_private_key(content: &str) -> Result<SigningKey, SigningEr
 
 #[cfg(test)]
 mod tests {
-    use std::{fs};
+    use std::fs;
 
     use serde::{Deserialize, Serialize};
 
@@ -151,7 +155,8 @@ mod tests {
 
         let serialized_payload = serde_json::json!(Foo {
             bar: "baz".to_string(),
-        }).to_string();
+        })
+        .to_string();
 
         let res = verify(serialized_payload, &res.signature, &public_key);
         assert!(res.is_ok());
@@ -170,7 +175,8 @@ mod tests {
 
         let serialized_payload = serde_json::json!(Foo {
             bar: "boz".to_string(),
-        }).to_string();
+        })
+        .to_string();
 
         let res = verify(serialized_payload, &res.signature, &public_key);
         assert!(res.is_err());

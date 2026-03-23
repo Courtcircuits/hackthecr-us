@@ -1,8 +1,8 @@
 use std::future::Future;
 
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, PgTransaction};
 use sqlx::types::Uuid;
+use sqlx::{PgPool, PgTransaction};
 use utoipa::ToSchema;
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
@@ -10,7 +10,7 @@ pub struct MealSchema {
     pub meal_type: String,
     pub foodies: Option<String>,
     pub date: Option<String>,
-    pub restaurant_id: String
+    pub restaurant_id: String,
 }
 
 #[derive(Clone)]
@@ -54,17 +54,28 @@ pub enum MealModelError {
     #[error("Internal error : {0}")]
     DatabaseError(String),
     #[error("Sync skipped")]
-    SyncSkipped
+    SyncSkipped,
 }
 
-
 pub trait MealModel {
-    fn create_meal(&self, meal: Meal, tx: &mut PgTransaction<'_>) -> impl Future<Output = Result<(), MealModelError>> + Send;
-    fn get_meals_by_restaurant_id_batch(&self, restaurant_name: String, batch_id: Uuid) -> impl Future<Output = Result<Vec<Meal>, MealModelError>> + Send;
+    fn create_meal(
+        &self,
+        meal: Meal,
+        tx: &mut PgTransaction<'_>,
+    ) -> impl Future<Output = Result<(), MealModelError>> + Send;
+    fn get_meals_by_restaurant_id_batch(
+        &self,
+        restaurant_name: String,
+        batch_id: Uuid,
+    ) -> impl Future<Output = Result<Vec<Meal>, MealModelError>> + Send;
 }
 
 impl MealModel for PgPool {
-    async fn create_meal(&self, meal: Meal, tx: &mut PgTransaction<'_>) -> Result<(), MealModelError> {
+    async fn create_meal(
+        &self,
+        meal: Meal,
+        tx: &mut PgTransaction<'_>,
+    ) -> Result<(), MealModelError> {
         sqlx::query!(
             "INSERT INTO meals (meal_id, meal_type, foodies, date, restaurant_id, batch_id) VALUES ($1, $2, $3, $4, $5, $6)",
             meal.meal_id,
@@ -81,7 +92,14 @@ impl MealModel for PgPool {
         Ok(())
     }
 
-    async fn get_meals_by_restaurant_id_batch(&self, restaurant_name: String, batch_id: Uuid) -> Result<Vec<Meal>, MealModelError> where Self: Sync {
+    async fn get_meals_by_restaurant_id_batch(
+        &self,
+        restaurant_name: String,
+        batch_id: Uuid,
+    ) -> Result<Vec<Meal>, MealModelError>
+    where
+        Self: Sync,
+    {
         let rows = sqlx::query!(
             "SELECT m.meal_id, m.meal_type, m.foodies, m.date, m.restaurant_id, m.batch_id FROM meals m WHERE m.restaurant_id = $1 AND m.batch_id = $2",
             restaurant_name,

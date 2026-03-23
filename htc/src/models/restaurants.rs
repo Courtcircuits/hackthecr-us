@@ -63,7 +63,7 @@ pub enum RestaurantModelError {
     #[error("Database error: {0}")]
     DatabaseError(String),
     #[error("Sync skipped")]
-    SyncSkipped
+    SyncSkipped,
 }
 
 pub trait RestaurantModel {

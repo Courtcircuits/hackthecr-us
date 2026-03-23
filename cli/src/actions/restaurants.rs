@@ -4,7 +4,12 @@ use std::sync::{
 };
 
 use futures::future::join_all;
-use htc::{models::restaurants::RestaurantSchema, regions::{CrousRegion, CrousUrl}, sources::restaurants::RestaurantScrapedData};
+use htc::{
+    client::HTCClient,
+    models::restaurants::RestaurantSchema,
+    regions::{CrousRegion, CrousUrl},
+    sources::restaurants::RestaurantScrapedData,
+};
 use scraper::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
@@ -14,9 +19,7 @@ use tabled::{
 };
 use zenity::progress::{Frames, ProgressBar};
 
-use crate::{
-    actions::{Executable, ExecutionResult}, client::HTCClient
-};
+use crate::actions::{Executable, ExecutionResult};
 
 pub struct RestaurantsAction {
     pub target: CrousRegion,
@@ -26,7 +29,10 @@ pub struct RestaurantsAction {
 }
 
 impl Executable for RestaurantsAction {
-    fn execute(&self) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>> {
+    fn execute(
+        &self,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>>
+    {
         Box::pin(async move {
             let restaurants = self.collect().await.map_err(|e| {
                 ExecutionResult::Failure(format!("Failed to collect restaurant data: {:?}", e))

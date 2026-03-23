@@ -18,7 +18,7 @@ pub enum AdminError {
     #[error("Admin not found: {0}")]
     NotFound(String),
     #[error("Admin already exists : {0}")]
-    AlreadyExists(String)
+    AlreadyExists(String),
 }
 
 impl From<AdminErrors> for AdminError {
@@ -31,8 +31,7 @@ impl From<AdminErrors> for AdminError {
 }
 
 pub trait AdminService {
-    fn get_admin(&self, name: &str)
-    -> impl Future<Output = Result<Admin, AdminError>> + Send;
+    fn get_admin(&self, name: &str) -> impl Future<Output = Result<Admin, AdminError>> + Send;
 
     fn create_default_admin_key(
         &self,
@@ -49,16 +48,17 @@ impl AdminService for AdminServiceImpl {
     async fn create_default_admin_key(&self, admin_key: &str) -> Result<(), AdminError> {
         let admin = self.pool.get_admin("admin".to_string()).await;
         match admin {
-            Ok(admin) => {
-                return Err(AdminError::AlreadyExists(admin.ssh_key))
-            },
-            Err(AdminErrors::NotFound(_,_ )) => {
-                self.pool.create_admin(Admin{
-                    admin_id: Uuid::new_v4(),
-                    ssh_key: admin_key.to_string(),
-                    name: "admin".to_string()
-                }).await.map_err(|e| AdminError::AlreadyExists(e.to_string()))?;
-            },
+            Ok(admin) => return Err(AdminError::AlreadyExists(admin.ssh_key)),
+            Err(AdminErrors::NotFound(_, _)) => {
+                self.pool
+                    .create_admin(Admin {
+                        admin_id: Uuid::new_v4(),
+                        ssh_key: admin_key.to_string(),
+                        name: "admin".to_string(),
+                    })
+                    .await
+                    .map_err(|e| AdminError::AlreadyExists(e.to_string()))?;
+            }
             Err(_) => {
                 info!("Other unhandled error");
             }

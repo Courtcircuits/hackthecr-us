@@ -22,7 +22,13 @@ pub struct SseState {
 impl SseState {
     pub fn new(token: String) -> (Self, broadcast::Sender<ScrapeBatch>) {
         let (sender, _) = broadcast::channel(100);
-        (Self { sender: sender.clone(), token }, sender)
+        (
+            Self {
+                sender: sender.clone(),
+                token,
+            },
+            sender,
+        )
     }
 }
 

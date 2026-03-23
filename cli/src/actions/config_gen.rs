@@ -14,6 +14,6 @@ pub fn generate_ed25519_pem() -> Result<Ed25519Pem, rcgen::Error> {
 
     Ok(Ed25519Pem {
         certificate,
-        private_key
+        private_key,
     })
 }

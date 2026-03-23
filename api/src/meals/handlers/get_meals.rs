@@ -32,10 +32,7 @@ impl From<Vec<MealSchema>> for MenuSchema {
         let mut sections: HashMap<String, Vec<String>> = HashMap::new();
         for meal in value {
             let food = meal.foodies.unwrap_or_default();
-            sections
-                .entry(meal.meal_type)
-                .or_default()
-                .push(food);
+            sections.entry(meal.meal_type).or_default().push(food);
         }
 
         let meals = sections
@@ -67,7 +64,9 @@ pub async fn get_meals<A>(
 where
     A: App + Send + Sync + Clone,
 {
-    let region: CrousRegion = region.parse().map_err(|_| ApiError::NotFound(format!("Unknown region: {}", region)))?;
+    let region: CrousRegion = region
+        .parse()
+        .map_err(|_| ApiError::NotFound(format!("Unknown region: {}", region)))?;
     let meals = state
         .get_meals_by_restaurant_id(name, region)
         .await

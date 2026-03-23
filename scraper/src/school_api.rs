@@ -87,8 +87,7 @@ impl Scraper<Vec<ApiSchool>> for SchoolApiScraper {
     type Failure = SchoolApiScraperError;
 
     async fn scrape(&self) -> Result<Vec<ApiSchool>, Self::Failure> {
-        let (page1, page2) =
-            tokio::try_join!(self.fetch_page(0), self.fetch_page(100))?;
+        let (page1, page2) = tokio::try_join!(self.fetch_page(0), self.fetch_page(100))?;
 
         let schools = page1
             .results

@@ -8,7 +8,7 @@ pub struct School {
     pub long_name: String,
     pub name: String,
     pub coordinates: Option<String>,
-    pub batch_id: Uuid
+    pub batch_id: Uuid,
 }
 
 pub enum SchoolModelError {
@@ -17,9 +17,16 @@ pub enum SchoolModelError {
 }
 
 pub trait SchoolModel {
-    fn create_school(&self, school: School) -> impl Future<Output = Result<(), SchoolModelError>> + Send;
-    fn get_school_by_name(&self, name: String) -> impl Future<Output = Result<School, SchoolModelError>> + Send;
-    fn get_all_schools(&self) -> impl Future<Output = Result<Vec<School>, SchoolModelError>> + Send;
+    fn create_school(
+        &self,
+        school: School,
+    ) -> impl Future<Output = Result<(), SchoolModelError>> + Send;
+    fn get_school_by_name(
+        &self,
+        name: String,
+    ) -> impl Future<Output = Result<School, SchoolModelError>> + Send;
+    fn get_all_schools(&self)
+    -> impl Future<Output = Result<Vec<School>, SchoolModelError>> + Send;
 }
 
 impl SchoolModel for PgPool {
@@ -54,17 +61,16 @@ impl SchoolModel for PgPool {
             long_name: row.long_name,
             name: row.name,
             coordinates: row.coordinates,
-            batch_id: row.batch_id
+            batch_id: row.batch_id,
         })
     }
 
     async fn get_all_schools(&self) -> Result<Vec<School>, SchoolModelError> {
-        let rows = sqlx::query!(
-            "SELECT school_id, long_name, name, coordinates, batch_id FROM schools"
-        )
-        .fetch_all(self)
-        .await
-        .map_err(|e| SchoolModelError::DatabaseError(e.to_string()))?;
+        let rows =
+            sqlx::query!("SELECT school_id, long_name, name, coordinates, batch_id FROM schools")
+                .fetch_all(self)
+                .await
+                .map_err(|e| SchoolModelError::DatabaseError(e.to_string()))?;
 
         let schools = rows
             .into_iter()
@@ -73,7 +79,7 @@ impl SchoolModel for PgPool {
                 long_name: row.long_name,
                 name: row.name,
                 coordinates: row.coordinates,
-                batch_id: row.batch_id
+                batch_id: row.batch_id,
             })
             .collect();
 

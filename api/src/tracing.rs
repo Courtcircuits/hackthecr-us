@@ -1,16 +1,14 @@
-use opentelemetry::{trace::TracerProvider as _, KeyValue};
+use opentelemetry::{KeyValue, trace::TracerProvider as _};
 use opentelemetry_sdk::{
-    trace::{RandomIdGenerator, Sampler, SdkTracerProvider},
     Resource,
+    trace::{RandomIdGenerator, Sampler, SdkTracerProvider},
 };
 use opentelemetry_semantic_conventions::{
-    attribute::{DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_VERSION},
     SCHEMA_URL,
+    attribute::{DEPLOYMENT_ENVIRONMENT_NAME, SERVICE_VERSION},
 };
 use tracing_opentelemetry::OpenTelemetryLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
-
-
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 fn resource() -> Resource {
     Resource::builder()
@@ -39,7 +37,6 @@ fn init_tracer_provider() -> SdkTracerProvider {
         .with_resource(resource())
         .with_batch_exporter(exporter)
         .build()
-
 }
 
 pub fn init_tracing_subscriber() -> OtelGuard {
@@ -47,8 +44,8 @@ pub fn init_tracing_subscriber() -> OtelGuard {
 
     let tracer = tracer_provider.tracer("tracing-otel-subscriber");
 
-    let env_filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("info,sqlx=debug"));
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info,sqlx=debug"));
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())
@@ -56,9 +53,7 @@ pub fn init_tracing_subscriber() -> OtelGuard {
         .with(env_filter)
         .init();
 
-    OtelGuard {
-        tracer_provider
-    }
+    OtelGuard { tracer_provider }
 }
 
 pub struct OtelGuard {

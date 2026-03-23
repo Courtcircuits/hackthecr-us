@@ -1,6 +1,9 @@
 use futures::future::join_all;
 use htc::{
-    models::{meals::MealSchema, restaurants::RestaurantSchema}, regions::CrousRegion, sources::meals::RestaurantPageScrapedData
+    client::HTCClient,
+    models::{meals::MealSchema, restaurants::RestaurantSchema},
+    regions::CrousRegion,
+    sources::meals::RestaurantPageScrapedData,
 };
 use scraper::{Scraper, restaurant_page::RestaurantPageScraper};
 use tabled::{
@@ -9,7 +12,7 @@ use tabled::{
 };
 use thiserror::Error;
 
-use crate::{actions::{Executable, ExecutionResult}, client::HTCClient};
+use crate::actions::{Executable, ExecutionResult};
 
 pub struct MealsAction {
     pub target: CrousRegion,
@@ -87,7 +90,12 @@ impl MealsAction {
             println!("{}", table);
         } else {
             for meals_by_restaurant in meals {
-                let _ = self.client.put_meals(meals_by_restaurant, self.target).await;
+                if !meals_by_restaurant.is_empty() {
+                    let _ = self
+                        .client
+                        .put_meals(meals_by_restaurant, self.target)
+                        .await;
+                }
             }
         }
         Ok(())
@@ -95,9 +103,14 @@ impl MealsAction {
 }
 
 impl Executable for MealsAction {
-    fn execute(&self) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>> {
+    fn execute(
+        &self,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ExecutionResult>> + Send + '_>>
+    {
         Box::pin(async move {
-            self.execute_inner().await.map_err(|e| ExecutionResult::Failure(e.to_string()))
+            self.execute_inner()
+                .await
+                .map_err(|e| ExecutionResult::Failure(e.to_string()))
         })
     }
 }

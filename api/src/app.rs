@@ -36,14 +36,14 @@ pub trait App {
         restaurants: &[RestaurantSchema],
         admin: Admin,
         crous_region: CrousRegion,
-        checksum: String
+        checksum: String,
     ) -> impl Future<Output = Result<(), RestaurantModelError>> + Send;
     fn save_meals(
         &self,
         meals: &[MealSchema],
         admin: Admin,
         crous_region: CrousRegion,
-        checksum: String
+        checksum: String,
     ) -> impl Future<Output = Result<(), MealModelError>> + Send;
     fn get_admin(&self, name: &str) -> impl Future<Output = Result<Admin, AdminError>> + Send;
     fn get_meals_by_restaurant_id(
@@ -56,7 +56,7 @@ pub trait App {
         entity: Entity,
         author_id: Uuid,
         region: CrousRegion,
-        checksum: String
+        checksum: String,
     ) -> impl Future<Output = Result<(Uuid, PgTransaction<'_>), ScrapedBatchModelError>> + Send;
 }
 
@@ -105,15 +105,23 @@ where
         restaurants: &[RestaurantSchema],
         admin: Admin,
         crous_region: CrousRegion,
-        checksum: String
+        checksum: String,
     ) -> Result<(), RestaurantModelError> {
         self.restaurants_service
             .save_restaurants(restaurants, admin, crous_region, checksum)
             .await
     }
 
-    async fn save_meals(&self, meals: &[MealSchema], admin: Admin, crous_region: CrousRegion, checksum: String) -> Result<(), MealModelError> {
-        self.meals_service.save_meals(meals, admin, crous_region, checksum).await
+    async fn save_meals(
+        &self,
+        meals: &[MealSchema],
+        admin: Admin,
+        crous_region: CrousRegion,
+        checksum: String,
+    ) -> Result<(), MealModelError> {
+        self.meals_service
+            .save_meals(meals, admin, crous_region, checksum)
+            .await
     }
 
     fn config(&self) -> &Config {
@@ -139,7 +147,7 @@ where
         entity: Entity,
         author_id: Uuid,
         region: CrousRegion,
-        checksum: String
+        checksum: String,
     ) -> Result<(Uuid, PgTransaction<'_>), ScrapedBatchModelError> {
         self.batch_service
             .create_batch(entity, author_id, region, checksum)

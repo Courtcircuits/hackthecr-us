@@ -26,7 +26,7 @@ pub enum ApiError {
     ServiceUnavailable(String),
     #[error("Conflict")]
     #[allow(dead_code)]
-    Conflict
+    Conflict,
 }
 
 impl IntoResponse for ApiError {
@@ -47,6 +47,5 @@ impl IntoResponse for ApiError {
         };
 
         (status_code, axum::Json(body)).into_response()
-
     }
 }

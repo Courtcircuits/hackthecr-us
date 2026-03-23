@@ -8,6 +8,7 @@ use htc::{
     regions::CrousRegion,
 };
 use sqlx::{PgPool, PgTransaction};
+use tracing::instrument;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -32,6 +33,7 @@ pub trait BatchesService {
 }
 
 impl BatchesService for BatchesServiceImpl {
+    #[instrument(skip(self), fields(region=%region), err)]
     async fn create_batch(
         &'_ self,
         entity: Entity,

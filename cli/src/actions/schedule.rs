@@ -3,11 +3,10 @@ use std::sync::Arc;
 use chrono::Utc;
 use cron_parser::parse;
 use futures::future::join_all;
-use htc::regions::CrousRegion;
+use htc::{client::HTCClient, regions::CrousRegion};
 
 use crate::{
     actions::{Executable, ExecutionResult},
-    client::HTCClient,
     config::{ConfigError, CronConfig},
 };
 

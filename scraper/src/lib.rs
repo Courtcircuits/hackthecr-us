@@ -1,5 +1,5 @@
-pub mod restaurant_page;
 pub mod restaurant_list;
+pub mod restaurant_page;
 pub mod school_api;
 
 pub enum ScraperError {
@@ -7,11 +7,15 @@ pub enum ScraperError {
     ParsingFailed(String),
 }
 
-
 #[cfg(not(test))]
 pub async fn get(url: &str) -> Result<scraper::Html, ScraperError> {
-    let response = reqwest::get(url).await.map_err(|_| ScraperError::RequestFailed)?;
-    let body = response.text().await.map_err(|_| ScraperError::RequestFailed)?;
+    let response = reqwest::get(url)
+        .await
+        .map_err(|_| ScraperError::RequestFailed)?;
+    let body = response
+        .text()
+        .await
+        .map_err(|_| ScraperError::RequestFailed)?;
     Ok(scraper::Html::parse_document(&body))
 }
 

@@ -37,22 +37,18 @@ impl Scraper<Vec<RestaurantData>> for RestaurantListScraper {
             .await
             .map_err(|_| RestaurantListScraperError::RequestFailed)?;
 
-        let restaurant_list_selector =
-            Selector::parse(".vc_restaurants > ul:nth-child(3) a").map_err(|_| {
+        let restaurant_list_selector = Selector::parse(".vc_restaurants > ul:nth-child(3) a")
+            .map_err(|_| {
                 RestaurantListScraperError::ParsingFailed(
                     "Couldn't get .vc_restaurants > ul:nth-child(3) a".to_string(),
                 )
             })?;
 
         let title_selector = Selector::parse(".restaurant_title").map_err(|_| {
-            RestaurantListScraperError::ParsingFailed(
-                "Couldn't get .restaurant_title".to_string(),
-            )
+            RestaurantListScraperError::ParsingFailed("Couldn't get .restaurant_title".to_string())
         })?;
         let city_selector = Selector::parse(".restaurant_area").map_err(|_| {
-            RestaurantListScraperError::ParsingFailed(
-                "Couldn't get .restaurant_area".to_string(),
-            )
+            RestaurantListScraperError::ParsingFailed("Couldn't get .restaurant_area".to_string())
         })?;
 
         let mut restaurants = Vec::new();
@@ -95,7 +91,6 @@ mod tests {
         let result = scraper.scrape().await;
 
         insta::assert_debug_snapshot!(result);
-
     }
 
     #[tokio::test]

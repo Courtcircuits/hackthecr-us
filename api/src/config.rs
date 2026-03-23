@@ -6,7 +6,12 @@ pub struct Config {
     #[clap(env, long, default_value = "3000", help = "Port to listen on")]
     pub port: u16,
 
-    #[clap(env, long, default_value = "hackthecrous.com", help = "Allowed origins")]
+    #[clap(
+        env,
+        long,
+        default_value = "hackthecrous.com",
+        help = "Allowed origins"
+    )]
     pub origins: Vec<String>,
 
     #[clap(env, long, help = "Database URL")]
@@ -15,7 +20,10 @@ pub struct Config {
     #[clap(env, long, help = "Default admin public key")]
     pub admin_public_key: String,
 
-    #[clap(env, long, help = "Bearer token required to connect to the SSE /events endpoint")]
+    #[clap(
+        env,
+        long,
+        help = "Bearer token required to connect to the SSE /events endpoint"
+    )]
     pub sse_token: String,
 }
-

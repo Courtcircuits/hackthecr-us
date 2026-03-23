@@ -7,8 +7,8 @@ pub mod restaurants;
 pub mod schools;
 pub mod scrape_batch;
 
-#[derive(Clone, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[derive(Clone, serde::Serialize, serde::Deserialize, Debug)]
+#[serde(try_from = "String")]
 pub enum Entity {
     Restaurants,
     Meals(String),
@@ -36,6 +36,13 @@ impl FromStr for Entity {
                 }
             }
         }
+    }
+}
+
+impl TryFrom<String> for Entity {
+    type Error = EntityError;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        Entity::from_str(&s)
     }
 }
 

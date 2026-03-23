@@ -10,6 +10,7 @@ use htc::{
     regions::CrousRegion,
 };
 use sqlx::PgPool;
+use tracing::instrument;
 use uuid::Uuid;
 
 use crate::batches::service::{BatchesService, BatchesServiceImpl};
@@ -39,6 +40,7 @@ where
 }
 
 impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
+    #[instrument(skip(self), fields(region=%region), err)]
     async fn save_meals(
         &self,
         meals: &[MealSchema],

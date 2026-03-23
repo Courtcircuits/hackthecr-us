@@ -28,8 +28,6 @@ pub struct EntityScheduleConfig {
     pub target: Vec<String>,
 }
 
-
-
 #[derive(Debug, thiserror::Error)]
 pub enum ConfigError<'a> {
     #[error("Couldn't find the config file at {0}")]
@@ -44,7 +42,6 @@ pub enum ConfigError<'a> {
     CertificateGenFailed(String),
     #[error("Unknown region: {0}")]
     UnknownRegion(String),
-    
 }
 
 impl Config {

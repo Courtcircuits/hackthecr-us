@@ -1,9 +1,6 @@
 use scraper::restaurant_page::RestaurantPageData;
 
-use crate::models::{
-    meals::{MealSchema},
-    restaurants::RestaurantSchema,
-};
+use crate::models::{meals::MealSchema, restaurants::RestaurantSchema};
 
 pub struct RestaurantPageScrapedData {
     pub restaurant: RestaurantSchema,
@@ -11,11 +8,9 @@ pub struct RestaurantPageScrapedData {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum RestaurantConvertError {
-}
+pub enum RestaurantConvertError {}
 
 impl From<RestaurantPageScrapedData> for Vec<MealSchema> {
-
     fn from(val: RestaurantPageScrapedData) -> Self {
         let mut meals = Vec::new();
         for menu in val.page.menus {

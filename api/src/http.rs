@@ -1,4 +1,4 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     Router,
@@ -20,8 +20,7 @@ pub async fn serve(app: Router, config: Arc<Config>) -> Result<JoinHandle<()>, A
     info!("Starting server on 0.0.0.0:{}", config.port);
 
     Ok(tokio::spawn(async move {
-        axum::serve(listener, app)
-            .await.unwrap();
+        axum::serve(listener, app).await.unwrap();
     }))
 }
 

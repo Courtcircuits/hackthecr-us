@@ -6,7 +6,7 @@ use sqlx::{PgPool, PgTransaction, types::Uuid};
 
 use crate::{models::Entity, regions::CrousRegion};
 
-#[derive(Clone, Deserialize, serde::Serialize)]
+#[derive(Clone, Deserialize, serde::Serialize, Debug)]
 pub struct ScrapeBatch {
     pub batch_id: Uuid,
     pub entity: Entity,
@@ -77,7 +77,7 @@ impl ScrapedBatchModel for PgPool {
         .fetch_optional(self)
         .await
         .map_err(|e| ScrapedBatchModelError::DatabaseError(e.to_string()))?;
-        
+
         let Some(row) = row else { return Ok(None) };
 
         Ok(Some(ScrapeBatch {

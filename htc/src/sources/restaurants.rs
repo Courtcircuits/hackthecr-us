@@ -1,5 +1,5 @@
+use crate::{id::build_id, models::restaurants::RestaurantSchema};
 use scraper::{restaurant_list::RestaurantData, restaurant_page::RestaurantPageData};
-use crate::{id::build_id, models::restaurants::{RestaurantSchema}};
 
 pub struct RestaurantScrapedData {
     pub page: RestaurantPageData,
@@ -29,26 +29,22 @@ mod tests {
     #[test]
     fn test_restaurant_conversion() {
         let restaurant_page_data = RestaurantPageData {
-            menus: vec![
-                MenuData {
-                    date: "2024-06-01".to_string(),
-                    meals: vec![
-                        MealData {
-                            title: "Lunch".to_string(),
-                            categories: vec![
-                                FoodCategory {
-                                    name: "Main Course".to_string(),
-                                    dishes: vec!["Spaghetti".to_string(), "Pizza".to_string()],
-                                },
-                                FoodCategory {
-                                    name: "Dessert".to_string(),
-                                    dishes: vec!["Ice Cream".to_string()],
-                                },
-                            ],
+            menus: vec![MenuData {
+                date: "2024-06-01".to_string(),
+                meals: vec![MealData {
+                    title: "Lunch".to_string(),
+                    categories: vec![
+                        FoodCategory {
+                            name: "Main Course".to_string(),
+                            dishes: vec!["Spaghetti".to_string(), "Pizza".to_string()],
+                        },
+                        FoodCategory {
+                            name: "Dessert".to_string(),
+                            dishes: vec!["Ice Cream".to_string()],
                         },
                     ],
-                },
-            ],
+                }],
+            }],
             hours: "12:00 - 14:00".to_string(),
             coordinates: (48.5734, 7.7521),
         };

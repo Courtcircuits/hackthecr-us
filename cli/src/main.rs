@@ -2,18 +2,16 @@ use std::{path::PathBuf, process::exit};
 
 use clap::{Parser, Subcommand};
 use color_print::cprintln;
-use htc::regions::CrousRegion;
+use htc::{client::HTCClient, regions::CrousRegion};
 
 use crate::{
     actions::{
         Executable, meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
     },
-    client::HTCClient,
     config::Config,
 };
 
 pub mod actions;
-pub mod client;
 pub mod config;
 
 #[derive(Parser, Debug)]
@@ -130,9 +128,11 @@ async fn main() {
         }
         Command::Schedule {} => match cron_config {
             Some(config) => {
-                let schedule = ScheduleAction::try_from_config(config, client).map_err(|e| {
-                    cprintln!("💣 <red>{}</red>", e.to_string());
-                }).unwrap();
+                let schedule = ScheduleAction::try_from_config(config, client)
+                    .map_err(|e| {
+                        cprintln!("💣 <red>{}</red>", e.to_string());
+                    })
+                    .unwrap();
                 let _ = schedule.schedule().await;
             }
             None => {
