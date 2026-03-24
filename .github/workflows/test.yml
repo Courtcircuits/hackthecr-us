@@ -42,6 +42,15 @@ jobs:
           cd ${{ github.workspace }}/${{ github.sha }}
           cat .env
           cargo test
+      - name: Build CLI (release)
+        run: |
+          cd ${{ github.workspace }}/${{ github.sha }}
+          cargo build --release -p cli
+      - name: Upload CLI binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli
+          path: ${{ github.sha }}/target/release/cli
 
   release:
     runs-on: ubuntu-latest
@@ -50,14 +59,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build CLI (release)
-        run: cargo build --release -p cli
+      - name: Download CLI binary
+        uses: actions/download-artifact@v4
+        with:
+          name: cli
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -65,4 +70,4 @@ jobs:
           body: "CLI release from commit ${{ github.sha }}"
           tag: "release-${{ github.sha }}"
           name: "CLI ${{ github.sha }}"
-          files: target/release/cli
+          files: cli
