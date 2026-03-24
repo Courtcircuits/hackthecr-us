@@ -68,6 +68,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: "CLI release from commit ${{ github.sha }}"
-          tag: "release-${{ github.sha }}"
+          tag_name: "release-${{ github.sha }}"
           name: "CLI ${{ github.sha }}"
           files: cli
