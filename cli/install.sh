@@ -28,3 +28,22 @@ mv cli $HOME/.local/bin/htcctl
 chmod +x $HOME/.local/bin/htcctl
 
 popd > /dev/null
+
+mkdir -p $HOME/.config/systemd/user
+cat > $HOME/.config/systemd/user/htcctl-schedule.service << 'EOF'
+[Unit]
+Description=htcctl schedule
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/htcctl schedule
+
+[Install]
+WantedBy=default.target
+EOF
+
+systemctl --user daemon-reload > /dev/null
+echo "htcctl installed. To enable the schedule service, run:"
+echo "  systemctl --user enable htcctl-schedule.service"
