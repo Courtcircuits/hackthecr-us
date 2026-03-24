@@ -31,6 +31,12 @@ jobs:
           until docker compose -f ${{ github.workspace }}/${{ github.sha }}/docker-compose.yml exec -T postgres pg_isready -U postgres; do
             sleep 1
           done
+      - name: Install sqlx-cli
+        run: cargo install sqlx-cli --no-default-features --features native-tls,postgres
+      - name: Run migrations
+        run: sqlx migrate run --source ${{ github.workspace }}/${{ github.sha }}/migrations
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/hackthecrous
       - name: Run tests
         run: |
           cd ${{ github.workspace }}/${{ github.sha }}
