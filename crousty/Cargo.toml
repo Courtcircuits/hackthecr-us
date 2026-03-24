@@ -6,7 +6,10 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-serenity = "0.12.5"
 reqwest.workspace = true
 htc = { package = "htc", path = "../htc" }
 tokio.workspace = true
+dotenv = "0.15.0"
+poise = "0.6.1"
+tracing.workspace = true
+tracing-subscriber.workspace = true
