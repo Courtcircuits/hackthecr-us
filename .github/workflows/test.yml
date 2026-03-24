@@ -18,13 +18,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ${{ github.sha }}
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ github.sha }}
       - name: Run services
         run: |
           cd ${{ github.workspace }}/${{ github.sha }}
           docker compose up -d
+      - name: Wait for Postgres
+        run: |
+          until docker compose -f ${{ github.workspace }}/${{ github.sha }}/docker-compose.yml exec -T postgres pg_isready -U postgres; do
+            sleep 1
+          done
       - name: Run tests
         run: |
           cd ${{ github.workspace }}/${{ github.sha }}
+          cat .env
           cargo test
 
   release:
@@ -36,6 +46,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
 
       - name: Build CLI (release)
         run: cargo build --release -p cli
