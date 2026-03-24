@@ -10,7 +10,7 @@ use htc::{
     regions::{CrousRegion, CrousUrl},
     sources::restaurants::RestaurantScrapedData,
 };
-use scraper::{
+use crawler::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
 use tabled::{
@@ -100,7 +100,7 @@ impl RestaurantsAction {
     }
 
     async fn collect_restaurant(
-        restaurant_desc: scraper::restaurant_list::RestaurantData,
+        restaurant_desc: crawler::restaurant_list::RestaurantData,
         progress_bar: Arc<ProgressBar>,
         uid: usize,
         counter: Arc<AtomicUsize>,

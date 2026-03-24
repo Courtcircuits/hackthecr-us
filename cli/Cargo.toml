@@ -1,11 +1,13 @@
 [package]
 name = "cli"
-version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
 htc = { package = "htc", path = "../htc" }
-scraper = { path = "../scraper" }
+crawler = { path = "../crawler" }
 tabled = "0.20.0"
 reqwest.workspace = true
 base64.workspace = true

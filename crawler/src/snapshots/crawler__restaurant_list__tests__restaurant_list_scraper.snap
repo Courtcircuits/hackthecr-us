@@ -1,5 +1,5 @@
 ---
-source: scraper/src/restaurant_list.rs
+source: crawler/src/restaurant_list.rs
 expression: result
 ---
 Ok(
@@ -15,9 +15,29 @@ Ok(
             crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-boutonnet/",
         },
         RestaurantData {
+            name: "Brasserie La Pinède",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-la-pinede-2/",
+        },
+        RestaurantData {
+            name: "Brasserie Le Graella",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-le-graella-3/",
+        },
+        RestaurantData {
+            name: "Brasserie Odontologie",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-odontologie-4/",
+        },
+        RestaurantData {
             name: "Brasserie Triolet",
             city: "Montpellier",
             crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-triolet/",
+        },
+        RestaurantData {
+            name: "Brasserie Veyrassi",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/brasserie-veyrassi-2/",
         },
         RestaurantData {
             name: "Cafet’ Aquarium",
@@ -90,6 +110,11 @@ Ok(
             crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-paul-valery-um3/",
         },
         RestaurantData {
+            name: "Cafet’ Pharma",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-pharma-2/",
+        },
+        RestaurantData {
             name: "Cafet’ Richter",
             city: "Montpellier",
             crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-richter/",
@@ -110,9 +135,29 @@ Ok(
             crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-staps/",
         },
         RestaurantData {
+            name: "Cafet’ Sudalternance",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-sudalternance-2/",
+        },
+        RestaurantData {
             name: "Cafet’ Trioletto",
             city: "Montpellier",
             crous_url: "https://www.crous-montpellier.fr/restaurant/cafet-trioletto/",
+        },
+        RestaurantData {
+            name: "Cafet’ Atrium",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafeteria-atrium/",
+        },
+        RestaurantData {
+            name: "Cafétéria Campus Mailly",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/cafeteria-campus-mailly/",
+        },
+        RestaurantData {
+            name: "Resto U’ Du Guesclin",
+            city: "N/A",
+            crous_url: "https://www.crous-montpellier.fr/restaurant/resto-u-du-guesclin/",
         },
         RestaurantData {
             name: "Resto U’ Perpignan",

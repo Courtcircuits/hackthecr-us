@@ -5,7 +5,7 @@ use htc::{
     regions::CrousRegion,
     sources::meals::RestaurantPageScrapedData,
 };
-use scraper::{Scraper, restaurant_page::RestaurantPageScraper};
+use crawler::{Scraper, restaurant_page::RestaurantPageScraper};
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},

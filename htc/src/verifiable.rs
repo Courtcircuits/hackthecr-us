@@ -119,8 +119,7 @@ pub fn read_pkcs8_pem_private_key(content: &str) -> Result<SigningKey, SigningEr
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
-
+    use base64::prelude::*;
     use serde::{Deserialize, Serialize};
 
     use crate::verifiable::{sign, verify};
@@ -130,15 +129,21 @@ mod tests {
         bar: String,
     }
 
+    fn private_key_b64() -> String {
+        BASE64_STANDARD.encode(include_bytes!("../tests/private_key.pem"))
+    }
+
+    fn public_key_b64() -> String {
+        BASE64_STANDARD.encode(include_bytes!("../tests/public_key.pem"))
+    }
+
     #[test]
     fn test_sign() {
         let payload = Foo {
             bar: "baz".to_string(),
         };
 
-        let private_key = include_str!("../tests/private_key.pem");
-
-        let res = sign(payload, private_key, "John".to_string());
+        let res = sign(payload, &private_key_b64(), "John".to_string());
         assert!(res.is_ok());
     }
 
@@ -148,17 +153,14 @@ mod tests {
             bar: "baz".to_string(),
         };
 
-        let private_key = include_str!("../tests/private_key.pem");
-        let public_key = fs::read_to_string("./tests/public_key.pem").unwrap();
-
-        let res = sign(payload, private_key, "John".to_string()).unwrap();
+        let res = sign(payload, &private_key_b64(), "John".to_string()).unwrap();
 
         let serialized_payload = serde_json::json!(Foo {
             bar: "baz".to_string(),
         })
         .to_string();
 
-        let res = verify(serialized_payload, &res.signature, &public_key);
+        let res = verify(serialized_payload, &res.signature, &public_key_b64());
         assert!(res.is_ok());
     }
 
@@ -168,17 +170,14 @@ mod tests {
             bar: "baz".to_string(),
         };
 
-        let private_key = include_str!("../tests/private_key.pem");
-        let public_key = fs::read_to_string("./tests/public_key.pem").unwrap();
-
-        let res = sign(payload, private_key, "John".to_string()).unwrap();
+        let res = sign(payload, &private_key_b64(), "John".to_string()).unwrap();
 
         let serialized_payload = serde_json::json!(Foo {
             bar: "boz".to_string(),
         })
         .to_string();
 
-        let res = verify(serialized_payload, &res.signature, &public_key);
+        let res = verify(serialized_payload, &res.signature, &public_key_b64());
         assert!(res.is_err());
     }
 }

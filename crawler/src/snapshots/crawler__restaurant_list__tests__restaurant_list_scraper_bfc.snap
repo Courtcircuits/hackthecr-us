@@ -1,9 +1,64 @@
 ---
-source: scraper/src/restaurant_list.rs
+source: crawler/src/restaurant_list.rs
 expression: result
 ---
 Ok(
     [
+        RestaurantData {
+            name: "[Resto agréé] Auxerre • CH",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/auxerre-ch-2/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Auxerre • IUT",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/auxerre-iut/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Beaune • Hospices",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/beaune-hospices/",
+        },
+        RestaurantData {
+            name: "Belfort • Tech &amp; go’",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/belfort-tech-go/",
+        },
+        RestaurantData {
+            name: "Besançon • Brasserie Lumière",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-brasserie-lumiere/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ Hauts du Chazal",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-cafet-hauts-du-chazal/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ l’aqua",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-cafet-laqua/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ Le Croustillant",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-cafet-le-croustillant/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ Lumière",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-cafet-lumiere/",
+        },
+        RestaurantData {
+            name: "Besançon • Cafet’ Petit Bouloie",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-cafet-petit-bouloie/",
+        },
+        RestaurantData {
+            name: "Besançon • Resto U’ INSPE",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/besancon-resto-u-inspe/",
+        },
         RestaurantData {
             name: "Dijon • Brasserie la Cantine",
             city: "Dijon",
@@ -45,9 +100,24 @@ Ok(
             crous_url: "https://www.crous-bfc.fr/restaurant/cafet-mansart/",
         },
         RestaurantData {
+            name: "[Resto agréé] Chalon-sur-Saône • IUT",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/chalon-sur-saone-iut/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Cluny • E.N.S.A.M",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/cluny-e-n-s-a-m/",
+        },
+        RestaurantData {
             name: "Dijon • Crous’ty Truck • Centre-ville &amp; Campus",
             city: "Dijon",
             crous_url: "https://www.crous-bfc.fr/restaurant/crousty-truck/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Dole • C.H.",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/dole-c-h/",
         },
         RestaurantData {
             name: "Dijon • Crous Truck’ • Centre-ville",
@@ -58,6 +128,36 @@ Ok(
             name: "Besançon • Cafet’ L’Arsenal",
             city: "Besançon",
             crous_url: "https://www.crous-bfc.fr/restaurant/larsenal/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Montceau-les-Mines • C.H.",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/montceau-les-mines-c-h/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Nevers • INSPÉ",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/nevers-inspe/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Nevers • [ISAT] Resto U’ de la Croix Joyeuse",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/nevers-isat-resto-u-de-la-croix-joyeuse/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Nevers • [ISAT] site Les Montots",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/nevers-isat-site-les-montots/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Paray-Le-Monial • C.H.",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/paray-le-monial-c-h/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Pontarlier • C.H.",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/pontarlier-c-h/",
         },
         RestaurantData {
             name: "Belfort • Resto U’ &amp; Cafet’ Duvillard",
@@ -118,6 +218,16 @@ Ok(
             name: "Sévenans • Resto U’",
             city: "Sévenans",
             crous_url: "https://www.crous-bfc.fr/restaurant/resto-u-sevenans/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Semur-en-Auxois • C.H.",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/semur-en-auxois-c-h/",
+        },
+        RestaurantData {
+            name: "[Resto agréé] Sens • C.H",
+            city: "N/A",
+            crous_url: "https://www.crous-bfc.fr/restaurant/sens-c-h/",
         },
     ],
 )

@@ -6,3 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+serenity = "0.12.5"
+reqwest.workspace = true
+htc = { package = "htc", path = "../htc" }
+tokio.workspace = true

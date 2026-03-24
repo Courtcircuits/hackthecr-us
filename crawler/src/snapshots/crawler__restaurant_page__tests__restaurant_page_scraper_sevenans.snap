@@ -1,5 +1,5 @@
 ---
-source: scraper/src/restaurant_page.rs
+source: crawler/src/restaurant_page.rs
 expression: result
 ---
 Ok(

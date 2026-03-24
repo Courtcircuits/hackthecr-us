@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: ${{ github.sha }}
+      - name: Run services
+        run: |
+          cd ${{ github.workspace }}/${{ github.sha }}
+          docker compose up -d
+      - name: Run tests
+        run: |
+          cd ${{ github.workspace }}/${{ github.sha }}
+          cargo test
+
+  release:
+    runs-on: ubuntu-latest
+    needs: tests
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build CLI (release)
+        run: cargo build --release -p cli
+
+      - name: Create GitHub Release
+        uses: softproj/action-github-release@v2
+        with:
+          body: "CLI release from commit ${{ github.sha }}"
+          tag: "release-${{ github.sha }}"
+          name: "CLI ${{ github.sha }}"
+          files: target/release/cli

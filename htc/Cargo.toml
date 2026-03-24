@@ -12,7 +12,7 @@ sqlx.workspace = true
 utoipa.workspace = true
 utoipa-scalar.workspace = true
 thiserror.workspace = true
-scraper = { path = "../scraper" }
+crawler = { path = "../crawler" }
 ed25519-dalek = { version = "2.2.0", features = ["pkcs8", "pem"] }
 macros = { path = "../macros" }
 sha2 = "0.10.9"

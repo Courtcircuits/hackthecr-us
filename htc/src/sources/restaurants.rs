@@ -1,5 +1,5 @@
 use crate::{id::build_id, models::restaurants::RestaurantSchema};
-use scraper::{restaurant_list::RestaurantData, restaurant_page::RestaurantPageData};
+use crawler::{restaurant_list::RestaurantData, restaurant_page::RestaurantPageData};
 
 pub struct RestaurantScrapedData {
     pub page: RestaurantPageData,
@@ -22,7 +22,7 @@ impl Into<RestaurantSchema> for RestaurantScrapedData {
 
 #[cfg(test)]
 mod tests {
-    use scraper::restaurant_page::{FoodCategory, MealData, MenuData};
+    use crawler::restaurant_page::{FoodCategory, MealData, MenuData};
 
     use super::*;
 

@@ -1,4 +1,4 @@
-use scraper::school_api::ApiSchool;
+use crawler::school_api::ApiSchool;
 use sqlx::types::uuid;
 
 use crate::models::schools::School;

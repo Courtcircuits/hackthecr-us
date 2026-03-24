@@ -1,4 +1,4 @@
-use scraper::restaurant_page::RestaurantPageData;
+use crawler::restaurant_page::RestaurantPageData;
 
 use crate::models::{meals::MealSchema, restaurants::RestaurantSchema};
 
@@ -33,7 +33,7 @@ impl From<RestaurantPageScrapedData> for Vec<MealSchema> {
 
 #[cfg(test)]
 mod tests {
-    use scraper::restaurant_page::{FoodCategory, MealData, MenuData, RestaurantPageData};
+    use crawler::restaurant_page::{FoodCategory, MealData, MenuData, RestaurantPageData};
 
     use super::*;
 
