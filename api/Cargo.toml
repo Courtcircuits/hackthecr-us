@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-axum = "0.8.8"
+axum = { version = "0.8.8", features = ["query"] }
 dotenv = { version = "0.15.0", features = ["clap"] }
 utoipa = "5.4.0"
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
@@ -28,3 +28,4 @@ uuid = { version = "1", features = ["v4"] }
 tokio-stream = { version = "0.1", features = ["sync"] }
 tracing.workspace = true
 tracing-subscriber.workspace = true
+unicode-normalization = "0.1"

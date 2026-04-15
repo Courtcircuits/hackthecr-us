@@ -4,6 +4,7 @@ use htc::{
     models::{
         Entity,
         admins::Admin,
+        keywords::{self, Category, Keyword, KeywordModel},
         meals::{Meal, MealModel as _, MealModelError, MealSchema},
         scrape_batch::ScrapedBatchModelError,
     },
@@ -13,7 +14,7 @@ use sqlx::PgPool;
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::batches::service::{BatchesService, BatchesServiceImpl};
+use crate::{batches::service::{BatchesService, BatchesServiceImpl}, search::clean_word};
 
 pub trait MealsService {
     fn save_meals(
@@ -80,7 +81,14 @@ impl MealsService for MealsServiceImpl<BatchesServiceImpl> {
             .collect();
 
         for meal in meals {
+            let keywords = self.create_keywords(&meal, region);
             self.pool.create_meal(meal, &mut tx).await?;
+            for keyword in keywords {
+                self.pool
+                    .create_keyword(keyword, &mut tx)
+                    .await
+                    .map_err(MealModelError::DatabaseError)?;
+            }
         }
 
         tx.commit()
@@ -117,5 +125,33 @@ where
             pool,
             batch_service,
         }
+    }
+
+    pub fn create_keywords(&self, meal: &Meal, region: CrousRegion) -> Vec<Keyword> {
+        let mut keywords = Vec::new();
+        if let Some(foody) = &meal.foodies {
+            keywords.push(Keyword {
+                keyword_id: Uuid::new_v4(),
+                keyword: clean_word(foody.clone()),
+                restaurant_id: meal.restaurant_id.clone(),
+                category: Category::Meal,
+                region,
+            });
+            let words = foody.split(" ");
+            for word in words {
+                if word.len() > 2 {
+                    // getting rid of words like "de", "a", "le" ...
+                    keywords.push(Keyword {
+                        keyword_id: Uuid::new_v4(),
+                        keyword: clean_word(word.to_string()),
+                        restaurant_id: meal.restaurant_id.clone(),
+                        category: Category::Meal,
+                        region,
+                    });
+                }
+            }
+        }
+
+        keywords
     }
 }

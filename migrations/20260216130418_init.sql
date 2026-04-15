@@ -1,3 +1,5 @@
+CREATE EXTENSION pg_trgm;
+
 -- admins
 
 CREATE TABLE IF NOT EXISTS admins(
@@ -58,7 +60,8 @@ CREATE TABLE IF NOT EXISTS keywords(
 		keyword_id UUID PRIMARY KEY,
 		keyword VARCHAR(500) NOT NULL,
 		restaurant_id VARCHAR(400) NOT NULL REFERENCES restaurants(restaurant_id),
-		category VARCHAR(100) NOT NULL
+		category VARCHAR(100) NOT NULL,
+		region VARCHAR(500) NOT NULL
 );
 
 

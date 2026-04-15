@@ -76,6 +76,10 @@ pub trait RestaurantModel {
         &self,
         id: String,
     ) -> impl Future<Output = Result<Restaurant, RestaurantModelError>> + Send;
+    fn get_restaurants_by_ids(
+        &self,
+        ids: Vec<String>,
+    ) -> impl Future<Output = Result<Vec<Restaurant>, RestaurantModelError>> + Send;
     fn get_all_restaurants_batch(
         &self,
         batch: Uuid,
@@ -139,6 +143,36 @@ impl RestaurantModel for PgPool {
         .fetch_all(self)
         .await
         .map_err(|e| RestaurantModelError::DatabaseError(e.to_string()))?;
+
+        let restaurants = rows
+            .into_iter()
+            .map(|row| Restaurant {
+                restaurant_id: row.restaurant_id,
+                name: row.name,
+                url: row.url,
+                city: row.city,
+                coordinates: row.coordinates,
+                opening_hours: row.opening_hours,
+                created_at: row.created_at,
+                updated_at: row.updated_at,
+                batch_id: row.batch_id,
+            })
+            .collect();
+
+        Ok(restaurants)
+    }
+
+    async fn get_restaurants_by_ids(
+            &self,
+            ids: Vec<String>,
+        ) -> Result<Vec<Restaurant>, RestaurantModelError> {
+        let rows = sqlx::query!(
+            "SELECT restaurant_id, name, url, city, coordinates, opening_hours, created_at, updated_at, batch_id FROM restaurants WHERE restaurant_id = ANY($1)",
+            ids.as_slice()
+        ).fetch_all(self)
+            .await
+            .map_err(|e| RestaurantModelError::DatabaseError(e.to_string()))?;
+
 
         let restaurants = rows
             .into_iter()

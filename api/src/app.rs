@@ -2,11 +2,7 @@ use std::sync::Arc;
 
 use htc::{
     models::{
-        Entity,
-        admins::Admin,
-        meals::{Meal, MealModelError, MealSchema},
-        restaurants::{Restaurant, RestaurantModelError, RestaurantSchema},
-        scrape_batch::ScrapedBatchModelError,
+        admins::Admin,meals::{Meal, MealModelError, MealSchema}, restaurants::{Restaurant, RestaurantModelError, RestaurantSchema}, scrape_batch::ScrapedBatchModelError, Entity
     },
     regions::CrousRegion,
 };
@@ -18,7 +14,7 @@ use crate::{
     batches::service::{BatchesService, BatchesServiceImpl},
     config::Config,
     meals::service::{MealsService, MealsServiceImpl},
-    restaurants::service::{RestaurantsService, RestaurantsServiceImpl},
+    restaurants::service::{RestaurantsService, RestaurantsServiceImpl}, search::service::{SearchError, SearchService, SearchServiceImpl},
 };
 
 pub trait App {
@@ -58,6 +54,12 @@ pub trait App {
         region: CrousRegion,
         checksum: String,
     ) -> impl Future<Output = Result<(Uuid, PgTransaction<'_>), ScrapedBatchModelError>> + Send;
+
+    fn search_restaurant(
+        &self,
+        query: String,
+        region: CrousRegion,
+    ) -> impl Future<Output = Result<Vec<Restaurant>, SearchError>> + Send;
 }
 
 pub type DefaultApp = AppImpl<
@@ -65,29 +67,33 @@ pub type DefaultApp = AppImpl<
     MealsServiceImpl<BatchesServiceImpl>,
     AdminServiceImpl,
     BatchesServiceImpl,
+    SearchServiceImpl
 >;
 
 #[derive(Clone)]
-pub struct AppImpl<R, M, A, S>
+pub struct AppImpl<R, M, A, S, SE>
 where
     R: RestaurantsService + Send + Sync,
     M: MealsService + Send + Sync,
     A: AdminService + Send + Sync,
     S: BatchesService + Send + Sync,
+    SE: SearchService + Send + Sync
 {
-    restaurants_service: R,
+    restaurants_service: Arc<R>,
     meals_service: M,
     admin_service: A,
     batch_service: Arc<S>,
+    search_service: SE,
     config: Arc<Config>,
 }
 
-impl<R, M, A, S> App for AppImpl<R, M, A, S>
+impl<R, M, A, S, SE> App for AppImpl<R, M, A, S, SE>
 where
     R: RestaurantsService + Send + Sync,
     M: MealsService + Send + Sync,
     A: AdminService + Send + Sync,
     S: BatchesService + Send + Sync,
+    SE: SearchService + Send + Sync
 {
     async fn get_restaurants(
         &self,
@@ -153,20 +159,30 @@ where
             .create_batch(entity, author_id, region, checksum)
             .await
     }
+
+    async fn search_restaurant(
+            &self,
+            query: String,
+            region: CrousRegion,
+        ) -> Result<Vec<Restaurant>, SearchError> {
+        self.search_service.search_restaurant(query, region).await
+    }
 }
 
-impl<R, M, A, S> AppImpl<R, M, A, S>
+impl<R, M, A, S, SE> AppImpl<R, M, A, S, SE>
 where
     R: RestaurantsService + Send + Sync,
     M: MealsService + Send + Sync,
     A: AdminService + Send + Sync,
     S: BatchesService + Send + Sync,
+    SE: SearchService + Send + Sync,
 {
     pub fn new(
-        restaurants_service: R,
+        restaurants_service: Arc<R>,
         meals_service: M,
         admin_service: A,
         batch_service: Arc<S>,
+        search_service: SE,
         config: Arc<Config>,
     ) -> Self {
         Self {
@@ -175,6 +191,7 @@ where
             admin_service,
             batch_service,
             config,
+            search_service
         }
     }
 }

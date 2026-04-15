@@ -12,6 +12,7 @@ use crate::{
     meals::service::MealsServiceImpl,
     restaurants::service::RestaurantsServiceImpl,
     router::root,
+    search::service::SearchServiceImpl,
     sse::SseState,
     tracing::init_tracing_subscriber,
 };
@@ -26,6 +27,7 @@ pub mod http;
 pub mod meals;
 pub mod restaurants;
 pub mod router;
+pub mod search;
 pub mod sse;
 pub mod tracing;
 
@@ -41,9 +43,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pool = Arc::new(pool);
 
     let batch_service = Arc::new(BatchesServiceImpl::new(pool.clone()));
-    let restaurants_service = RestaurantsServiceImpl::new(pool.clone(), batch_service.clone());
+    let restaurants_service = Arc::new(RestaurantsServiceImpl::new(pool.clone(), batch_service.clone()));
     let meals_service = MealsServiceImpl::new(pool.clone(), batch_service.clone());
     let admin_service = AdminServiceImpl::new(pool.clone());
+    let search_service = SearchServiceImpl::new(pool.clone(), restaurants_service.clone());
     let key = config.admin_public_key.clone();
 
     if !key.is_empty() {
@@ -70,6 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         meals_service,
         admin_service,
         batch_service,
+        search_service,
         config.clone(),
     );
     let root = root(app, sse_state).await.map_err(|e| {

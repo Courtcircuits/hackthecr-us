@@ -1,8 +1,12 @@
 use std::future::Future;
+use tracing::instrument;
 
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgPool, PgTransaction};
 
+use crate::regions::CrousRegion;
+
+#[derive(Debug)]
 pub enum Category {
     Meal,
     Restaurant,
@@ -30,78 +34,67 @@ impl From<Category> for &str {
     }
 }
 
+#[derive(Debug)]
 pub struct Keyword {
     pub keyword_id: Uuid,
     pub keyword: String,
     pub restaurant_id: String,
     pub category: Category,
+    pub region: CrousRegion,
 }
 
 pub trait KeywordModel {
-    fn create_keyword(&self, keyword: Keyword) -> impl Future<Output = Result<(), String>> + Send;
-    fn get_keywords_by_restaurant_id(
+    fn create_keyword(
         &self,
-        restaurant_id: String,
-    ) -> impl Future<Output = Result<Vec<Keyword>, String>> + Send;
+        keyword: Keyword,
+        tx: &mut PgTransaction<'_>,
+    ) -> impl Future<Output = Result<(), String>> + Send;
     fn query_restaurant(
         &self,
         query: String,
+        region: CrousRegion,
     ) -> impl Future<Output = Result<Vec<String>, String>> + Send;
 }
 
 impl KeywordModel for PgPool {
-    async fn create_keyword(&self, keyword: Keyword) -> Result<(), String> {
+    #[instrument(skip(self), err)]
+    async fn create_keyword(
+        &self,
+        keyword: Keyword,
+        tx: &mut PgTransaction<'_>,
+    ) -> Result<(), String> {
         let category: &str = keyword.category.into();
         sqlx::query!(
-            "INSERT INTO keywords (keyword_id, keyword, restaurant_id, category) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO keywords (keyword_id, keyword, restaurant_id, category, region) VALUES ($1, $2, $3, $4, $5)",
             keyword.keyword_id,
             keyword.keyword,
             keyword.restaurant_id,
-            category
+            category,
+            keyword.region.to_string()
         )
-        .execute(self)
+        .execute(&mut **tx)
         .await
         .map_err(|e| e.to_string())?;
 
         Ok(())
     }
 
-    async fn get_keywords_by_restaurant_id(
+    async fn query_restaurant(
         &self,
-        restaurant_id: String,
-    ) -> Result<Vec<Keyword>, String> {
-        let rows = sqlx::query!(
-            "SELECT keyword_id, keyword, restaurant_id, category FROM keywords WHERE restaurant_id = $1",
-            restaurant_id
-        )
-        .fetch_all(self)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        let keywords = rows
-            .into_iter()
-            .map(|row| Keyword {
-                keyword_id: row.keyword_id,
-                keyword: row.keyword,
-                restaurant_id: row.restaurant_id,
-                category: Category::from(row.category.as_str()),
-            })
-            .collect();
-
-        Ok(keywords)
-    }
-
-    async fn query_restaurant(&self, query: String) -> Result<Vec<String>, String> {
+        query: String,
+        region: CrousRegion,
+    ) -> Result<Vec<String>, String> {
         let pattern = format!("%{}%", query);
         let rows = sqlx::query!(
-            "SELECT DISTINCT restaurant_id FROM keywords WHERE keyword ILIKE $1",
-            pattern
+            "SELECT restaurant_id, SUM(word_similarity($1, keyword)) AS score FROM keywords WHERE word_similarity($1, keyword) > 0.5 AND region = $2 GROUP BY restaurant_id ORDER BY score DESC",
+            pattern,
+            region.to_string()
         )
         .fetch_all(self)
         .await
         .map_err(|e| e.to_string())?;
 
-        let ids = rows.into_iter().map(|row| row.restaurant_id).collect();
+        let ids = rows.into_iter().map(|row| row.restaurant_id).collect::<Vec<_>>();
 
         Ok(ids)
     }

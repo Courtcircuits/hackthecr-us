@@ -65,5 +65,5 @@ where
     )
 )]
 pub async fn get_healthcheck_handler() -> Result<String, ApiError> {
-    Ok("Test".to_string())
+    Ok("I'm alive ! #yahou".to_string())
 }

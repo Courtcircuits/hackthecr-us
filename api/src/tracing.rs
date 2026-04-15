@@ -1,4 +1,5 @@
 use opentelemetry::{KeyValue, trace::TracerProvider as _};
+use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{
     Resource,
     trace::{RandomIdGenerator, Sampler, SdkTracerProvider},
@@ -26,6 +27,7 @@ fn resource() -> Resource {
 fn init_tracer_provider() -> SdkTracerProvider {
     let exporter = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
+        .with_endpoint("http://0.0.0.0:4317")
         .build()
         .unwrap();
 
