@@ -11,6 +11,9 @@ serde_json = "1.0.149"
 thiserror = "2.0.18"
 tokio.workspace = true
 reqwest.workspace = true
+chrono.workspace = true
+unicode-normalization.workspace = true
+
 
 [dev-dependencies]
 mockall = "0.13.1"

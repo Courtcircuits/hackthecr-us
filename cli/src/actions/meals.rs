@@ -1,3 +1,8 @@
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
+};
+
 use futures::future::join_all;
 use htc::{
     client::HTCClient,
@@ -6,6 +11,7 @@ use htc::{
     sources::meals::RestaurantPageScrapedData,
 };
 use crawler::{Scraper, restaurant_page::RestaurantPageScraper};
+use rattles::presets::prelude as presets;
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
@@ -43,9 +49,36 @@ impl MealsAction {
             .await
             .map_err(|e| MealsActionResult::Failure(e.to_string()))?;
 
-        let meals_scrape_futures = restaurants_url.into_iter().map(Self::collect_restaurant);
+        let total = restaurants_url.len();
+        let progress = Arc::new(AtomicUsize::new(0));
+        let rattle = presets::waverows();
+
+        let spinner_progress = Arc::clone(&progress);
+        let spinner = tokio::spawn(async move {
+            loop {
+                let done = spinner_progress.load(Ordering::Relaxed);
+                let frame = rattle.current_frame();
+                print!("\r{} Scraping meals... {}/{}", frame, done, total);
+                let _ = std::io::Write::flush(&mut std::io::stdout());
+                tokio::time::sleep(std::time::Duration::from_millis(80)).await;
+            }
+        });
+
+        let meals_scrape_futures = restaurants_url.into_iter().map(|r| {
+            let progress = Arc::clone(&progress);
+            async move {
+                let result = Self::collect_restaurant(r).await;
+                progress.fetch_add(1, Ordering::Relaxed);
+                result
+            }
+        });
 
         let results = join_all(meals_scrape_futures).await;
+
+        spinner.abort();
+        print!("\r{}\r", " ".repeat(60));
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+
         let mut meals = Vec::new();
         for result in results {
             meals.push(result?);

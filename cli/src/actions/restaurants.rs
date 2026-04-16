@@ -13,11 +13,11 @@ use htc::{
 use crawler::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
 };
+use rattles::presets::prelude as presets;
 use tabled::{
     Table, Tabled,
     settings::{Alignment, Style, object::Columns},
 };
-use zenity::progress::{Frames, ProgressBar};
 
 use crate::actions::{Executable, ExecutionResult};
 
@@ -83,15 +83,37 @@ impl RestaurantsAction {
                 ExecutionResult::Failure(format!("Failed to scrape restaurant list: {}", e))
             })?;
 
-        let progress = Arc::new(ProgressBar::new(Frames::rect().set_goal(list_data.len())));
-        let uid = progress.get_last();
-        progress.run_all();
+        let total = list_data.len();
+        let progress = Arc::new(AtomicUsize::new(0));
+        let rattle = presets::waverows();
 
-        let counter = Arc::new(AtomicUsize::new(0));
+        let spinner_progress = Arc::clone(&progress);
+        let spinner = tokio::spawn(async move {
+            loop {
+                let done = spinner_progress.load(Ordering::Relaxed);
+                let frame = rattle.current_frame();
+                print!("\r{} Scraping restaurants... {}/{}", frame, done, total);
+                let _ = std::io::Write::flush(&mut std::io::stdout());
+                tokio::time::sleep(std::time::Duration::from_millis(80)).await;
+            }
+        });
+
         let futures = list_data
             .into_iter()
-            .map(|data| Self::collect_restaurant(data, progress.clone(), uid, counter.clone()));
+            .map(|r| {
+                let progress = Arc::clone(&progress);
+                async move {
+                    let result = Self::collect_restaurant(r).await;
+                    progress.fetch_add(1, Ordering::Relaxed);
+                    result
+                }
+            });
         let results = join_all(futures).await;
+
+        spinner.abort();
+        print!("\r{}\r", " ".repeat(60));
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+
         for result in results {
             restaurants.push(result?);
         }
@@ -101,9 +123,6 @@ impl RestaurantsAction {
 
     async fn collect_restaurant(
         restaurant_desc: crawler::restaurant_list::RestaurantData,
-        progress_bar: Arc<ProgressBar>,
-        uid: usize,
-        counter: Arc<AtomicUsize>,
     ) -> Result<RestaurantSchema, ExecutionResult> {
         let url = &restaurant_desc.crous_url;
         let page_data = RestaurantPageScraper::new(url.to_string())
@@ -121,8 +140,6 @@ impl RestaurantsAction {
             description: restaurant_desc,
         };
 
-        let completed = counter.fetch_add(1, Ordering::Relaxed) + 1;
-        progress_bar.set(&uid, &completed);
 
         Ok(scraped_data.into())
     }

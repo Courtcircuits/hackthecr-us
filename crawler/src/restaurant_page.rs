@@ -131,6 +131,11 @@ impl RestaurantPageScraper {
             if !date.is_empty() {
                 menus.push(MenuData { date, meals });
             }
+
+            if menus.is_empty() {
+                // only getting todays menu
+                break;
+            }
         }
 
         let hours = document.select(&info_selector).find_map(|info_el| {
