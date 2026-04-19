@@ -1,7 +1,8 @@
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use scraper::{Html, Selector};
 use thiserror::Error;
 
-use crate::Scraper;
+use crate::{Scraper, parse_date};
 
 #[derive(Debug)]
 pub struct RestaurantPageScraper {
@@ -93,6 +94,13 @@ impl RestaurantPageScraper {
                 .map(|e| e.inner_html())
                 .unwrap_or_default();
 
+            let parsed_date = parse_date(&date).map_err(|e| {
+                RestaurantPageScraperError::ParsingFailed(format!("Failed to parse date: {:?}", e))
+            })?;
+
+            let utc: DateTime<Utc> = Utc::now();
+            let today = NaiveDate::from_ymd_opt(utc.year(), utc.month(), utc.day()).unwrap();
+
             let mut meals = Vec::new();
 
             for meal_el in menu_el.select(&meal_selector) {
@@ -132,7 +140,7 @@ impl RestaurantPageScraper {
                 menus.push(MenuData { date, meals });
             }
 
-            if menus.is_empty() {
+            if parsed_date > today {
                 // only getting todays menu
                 break;
             }

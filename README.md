@@ -21,3 +21,18 @@ The code base is organized into five main folders:
 - **core** : the folder that contains the shared code between the API and the scraper, such as the database models and some data processing logic.
 - **cli** : this contains the code for `crousctl`, a command-line tool to administrate hack the crous but also to run the scraper from any machine.
 - **crousty** : this contains the code for Hack The Crous discord bot. It is used to alert you if there are any new meals.
+
+## Build the services (Docker way)
+
+To build the services using Docker, you can use the following command:
+
+- API
+```bash
+docker build -t htc-api -f api/Dockerfile .
+```
+
+- Scraper
+```bash
+docker build -t htc-scraper -f scraper/Dockerfile .
+```
+

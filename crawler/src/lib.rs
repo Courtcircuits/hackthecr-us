@@ -35,12 +35,13 @@ pub trait Scraper<T> {
     fn scrape(&self) -> impl Future<Output = Result<T, Self::Failure>>;
 }
 
+#[derive(Debug)]
 pub enum DateParsingError {
     BadStructure,
     ChronosError(String)
 }
 
-pub fn parse_date(date: String) -> Result<NaiveDate, DateParsingError> {
+pub fn parse_date(date: &str) -> Result<NaiveDate, DateParsingError> {
     let tokens: Vec<&str> = date.split(" ").collect();
     let days = vec!["lundi".to_string(), "mardi".to_string(), "mercredi".to_string(), "jeudi".to_string(), "vendredi".to_string(), "samedi".to_string(), "dimanche".to_string()];
     let months = vec!["janvier".to_string(), "fevrier".to_string(), "mars".to_string(), "avril".to_string(), "mai".to_string(), "juin".to_string(), "juillet".to_string(), "aout".to_string(), "septembre".to_string(), "octobre".to_string(), "novembre".to_string(), "decembre".to_string()];
