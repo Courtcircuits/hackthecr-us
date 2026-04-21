@@ -65,6 +65,8 @@ services:
       - ZOO_AUTOPURGE_INTERVAL=1
       - ZOO_ENABLE_PROMETHEUS_METRICS=yes
       - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
+    profiles:
+      - debug
   clickhouse:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
@@ -75,6 +77,8 @@ services:
     volumes:
       - ./clickhouse-cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse:/var/lib/clickhouse/
+    profiles:
+      - debug
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.117.1}
@@ -98,6 +102,8 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    profiles:
+      - debug
   otel-collector:
     !!merge <<: *db-depend
     image: signoz/signoz-otel-collector:${OTELCOL_TAG:-v0.144.2}
@@ -125,6 +131,8 @@ services:
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
+    profiles:
+      - debug
   signoz-telemetrystore-migrator:
     !!merge <<: *db-depend
     image: signoz/signoz-otel-collector:${OTELCOL_TAG:-v0.144.2}
@@ -142,6 +150,8 @@ services:
         /signoz-otel-collector migrate sync up &&
         /signoz-otel-collector migrate async up
     restart: on-failure
+    profiles:
+      - debug
 
   postgres:
     !!merge <<: *common

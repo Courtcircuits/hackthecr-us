@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT m.meal_id, m.meal_type, m.foodies, m.date, m.restaurant_id, m.batch_id FROM meals m WHERE m.restaurant_id = $1 AND m.batch_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "meal_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "meal_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "foodies",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "date",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "restaurant_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "batch_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "9069d479bac7b01458603ad66b659d857d1f5550604fd12012bb6dd847b45578"
+}

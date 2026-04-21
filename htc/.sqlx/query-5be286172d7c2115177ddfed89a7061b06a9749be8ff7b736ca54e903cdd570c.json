@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT restaurant_id, SUM(word_similarity($1, keyword)) AS score FROM keywords WHERE word_similarity($1, keyword) > 0.5 AND region = $2 GROUP BY restaurant_id ORDER BY score DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "restaurant_id",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "score",
+        "type_info": "Float4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "5be286172d7c2115177ddfed89a7061b06a9749be8ff7b736ca54e903cdd570c"
+}

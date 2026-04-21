@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT batch_id, entity, author, region, checksum, scraped_at FROM scrape_batch WHERE entity = $1 AND region = $2 ORDER BY scraped_at LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "batch_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "entity",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "author",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "region",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "checksum",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "scraped_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "41db76df0685008e4e016e16f60af11af64ec91d24bd036ac2d07436af25fed7"
+}

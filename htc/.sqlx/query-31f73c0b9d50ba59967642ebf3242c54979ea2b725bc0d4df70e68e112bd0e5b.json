@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT school_id, long_name, name, coordinates, batch_id FROM schools WHERE name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "school_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "long_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "coordinates",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "batch_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "31f73c0b9d50ba59967642ebf3242c54979ea2b725bc0d4df70e68e112bd0e5b"
+}

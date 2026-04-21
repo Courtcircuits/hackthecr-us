@@ -5,10 +5,12 @@ WORKDIR /app
 
 FROM chef AS planner
 COPY . .
+ENV SQLX_OFFLINE=true
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
+ENV SQLX_OFFLINE=true
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --release -p api
