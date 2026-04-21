@@ -1,6 +1,6 @@
 FROM rust:1.95-slim AS chef
 RUN cargo install cargo-chef
-RUN apt-get update && apt-get install -y pkg-config musl-tools && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y pkg-config musl-tools perl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 FROM chef AS planner
