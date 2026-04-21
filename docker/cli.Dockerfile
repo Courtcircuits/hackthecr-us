@@ -12,7 +12,7 @@ FROM chef AS builder
 ENV SQLX_OFFLINE=true
 COPY --from=planner /app/recipe.json recipe.json
 RUN rustup target add x86_64-unknown-linux-musl
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --target=x86_64-unknown-linux-musl --release --recipe-path recipe.json
 COPY . .
 RUN cargo build --target=x86_64-unknown-linux-musl --release -p cli
 
