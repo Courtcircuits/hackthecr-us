@@ -1,6 +1,7 @@
 FROM rust:1.95-slim AS chef
 RUN cargo install cargo-chef
-RUN apt-get update && apt-get install -y pkg-config libssl-dev perl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+ENV OPENSSL_NO_VENDOR=1
 WORKDIR /app
 
 FROM chef AS planner
