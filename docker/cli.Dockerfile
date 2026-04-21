@@ -18,5 +18,5 @@ RUN cargo build --target=x86_64-unknown-linux-musl --release -p cli
 
 FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/cli /usr/local/bin/cli
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/cli /usr/local/bin/cli
 CMD ["/usr/local/bin/cli"]
