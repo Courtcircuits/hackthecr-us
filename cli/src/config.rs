@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::actions::config_gen::generate_ed25519_pem;
+use crate::{actions::config_gen::generate_ed25519_pem, OutputFormat};
 
 const DEFAULT_API: &str = "https://api.hackthecrous.com";
 
@@ -61,29 +61,57 @@ impl Config {
         })
     }
 
-    pub fn generate<'a>(user: &'a str) -> Result<Self, ConfigError<'a>> {
+    pub fn generate<'a>(user: &'a str, server_name: Option<&str>, schedule: Option<CronConfig>) -> Result<Self, ConfigError<'a>> {
         let certificates =
             generate_ed25519_pem().map_err(|e| ConfigError::CertificateGenFailed(e.to_string()))?;
 
         Ok(Config {
-            server: DEFAULT_API.to_string(),
+            server: server_name.unwrap_or(DEFAULT_API).to_string(),
             client_key_data: certificates.private_key,
             public_key_data: certificates.certificate,
             user: user.to_string(),
-            schedule: None,
+            schedule,
         })
     }
+    
+    pub fn format(&self, output_format: OutputFormat, secret_name: Option<&str>) -> Result<String, ConfigError<'_>> {
+        match output_format {
+            OutputFormat::Yaml => self.as_yaml(),
+            OutputFormat::KubernetesSecret => {
+                let secret_name = secret_name.ok_or_else(|| ConfigError::UnknownRegion("Secret name is required for Kubernetes Secret format".to_string()))?;
+                self.as_kubernetes_secret(secret_name)
+            }
+        }
+    }
 
-    pub fn write(&self, path: &PathBuf) -> Result<(), ConfigError<'_>> {
-        std::fs::write(path, self.as_yaml()?).map_err(|e| {
-            ConfigError::WriteUnable(path.to_string_lossy().to_string(), e.to_string())
-        })
+    pub fn write(&self, path: &PathBuf, output_format: OutputFormat, secret_name: Option<&str>) -> Result<(), ConfigError<'_>> {
+        let content = self.format(output_format, secret_name)?;
+        std::fs::write(path, content).map_err(|e| ConfigError::WriteUnable(path.to_str().unwrap_or("unknown path").to_string(), e.to_string()))
+    }
+    
+    pub fn print(&self, output_format: OutputFormat, secret_name: Option<&str>) -> Result<(), ConfigError<'_>> {
+        let content = self.format(output_format, secret_name)?;
+        println!("{}", content);
+        Ok(())
     }
 
     pub fn as_yaml(&self) -> Result<String, ConfigError<'_>> {
         let yaml =
             serde_yaml::to_string(self).map_err(|e| ConfigError::InvalidYAML(e.to_string()))?;
-
         Ok(yaml)
+    }
+    
+    pub fn as_kubernetes_secret(&self, secret_name: &str) -> Result<String, ConfigError<'_>> {
+        let config = serde_yaml::to_string(self).map_err(|e| ConfigError::InvalidYAML(e.to_string()))?;
+        let indented_config = config
+            .lines()
+            .map(|line| format!("    {line}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let secret = include_str!("k8s_secret_template.yaml")
+            .replace("{{config}}", &indented_config)
+            .replace("{{secret_name}}", secret_name);
+
+        Ok(secret)
     }
 }

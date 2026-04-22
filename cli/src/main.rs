@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::exit};
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use color_print::cprintln;
 use htc::{client::HTCClient, regions::CrousRegion};
 
@@ -8,7 +8,7 @@ use crate::{
     actions::{
         Executable, meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
     },
-    config::Config,
+    config::{Config, CronConfig, EntityScheduleConfig},
 };
 
 pub mod actions;
@@ -25,6 +25,12 @@ struct Crousctl {
     pub command: Command,
     #[clap(long, short = 'c')]
     pub config: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, ValueEnum)]
+pub enum OutputFormat {
+    Yaml,
+    KubernetesSecret,
 }
 
 #[derive(Debug, Subcommand, PartialEq, Eq, Hash)]
@@ -52,8 +58,26 @@ pub enum Command {
     Generate {
         #[clap(long, short = 'u')]
         user: String,
+        #[clap(long, short = 'n')]
+        server_name: Option<String>,
         #[clap(long, short = 'd')]
         dry_run: bool,
+        #[clap(long, short = 'o', default_value = "yaml")]
+        output: Option<OutputFormat>,
+        #[clap(long, short = 's')]
+        secret_name: Option<String>,
+        #[clap(long)]
+        restaurants_schedule: Option<String>,
+        #[clap(long, num_args = 1..)]
+        restaurants_targets: Vec<String>,
+        #[clap(long)]
+        meals_schedule: Option<String>,
+        #[clap(long, num_args = 1..)]
+        meals_targets: Vec<String>,
+        #[clap(long)]
+        schools_schedule: Option<String>,
+        #[clap(long, num_args = 1..)]
+        schools_targets: Vec<String>,
     },
 }
 
@@ -66,25 +90,52 @@ async fn main() {
         PathBuf::from(home).join(".config/htc.yml")
     });
 
-    let Ok(config) = Config::from(&config_path) else {
-        match args.command {
-            Command::Generate { user, dry_run } => {
-                let new_config = Config::generate(&user).expect("Couldn't generate config");
-                if dry_run {
-                    println!("{}", new_config.as_yaml().expect("Couldn't generate yaml"));
-                } else {
-                    new_config
-                        .write(&config_path)
-                        .expect("Couldn't write config");
-                    println!("Configuration wrote at : {}", config_path.to_str().unwrap());
-                }
-                return;
-            }
-            _ => {
-                cprintln!("💣 <red>Config not found</red>");
-                exit(0)
-            }
+    if let Command::Generate {
+        user,
+        server_name,
+        dry_run,
+        output,
+        secret_name,
+        restaurants_schedule,
+        restaurants_targets,
+        meals_schedule,
+        meals_targets,
+        schools_schedule,
+        schools_targets,
+    } = args.command
+    {
+        let build_entity = |schedule: Option<String>, targets: Vec<String>| {
+            schedule.map(|s| EntityScheduleConfig { schedule: s, target: targets })
+        };
+        let restaurants = build_entity(restaurants_schedule, restaurants_targets);
+        let meals = build_entity(meals_schedule, meals_targets);
+        let schools = build_entity(schools_schedule, schools_targets);
+        let schedule = if restaurants.is_some() || meals.is_some() || schools.is_some() {
+            Some(CronConfig { restaurants, meals, schools })
+        } else {
+            None
+        };
+
+        let new_config = Config::generate(&user, server_name.as_deref(), schedule).expect("Couldn't generate config");
+        if dry_run {
+            new_config
+                .print(output.unwrap_or(OutputFormat::Yaml), secret_name.as_deref())
+                .expect("Couldn't format config");
+        } else {
+            new_config
+                .write(
+                    &config_path,
+                    output.unwrap_or(OutputFormat::Yaml),
+                    secret_name.as_deref(),
+                )
+                .expect("Couldn't write config");
         }
+        return;
+    }
+
+    let Ok(config) = Config::from(&config_path) else {
+        cprintln!("💣 <red>Config not found</red>");
+        exit(0)
     };
 
     let cron_config = config.schedule;
@@ -139,9 +190,6 @@ async fn main() {
                 cprintln!("💣 <red>No schedule config</red>");
             }
         },
-        Command::Generate {
-            user: _user,
-            dry_run: _dry_run,
-        } => {}
+        Command::Generate { .. } => unreachable!(),
     }
 }
