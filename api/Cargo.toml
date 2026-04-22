@@ -6,12 +6,12 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-axum = { version = "0.8.8", features = ["query"] }
-dotenv = { version = "0.15.0", features = ["clap"] }
+axum.workspace = true
+dotenv.workspace = true
 utoipa = "5.4.0"
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
-tower-http = { version = "0.6.8", features = ["cors", "trace"] }
 htc = { package = "htc", path = "../htc" }
+tower-http.workspace = true
 reqwest = { version = "0.12.5", features = ["native-tls-vendored"] }
 sqlx.workspace = true
 clap.workspace = true
