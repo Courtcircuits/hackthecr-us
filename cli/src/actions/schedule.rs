@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
-use chrono::Utc;
-use cron_parser::parse;
 use futures::future::join_all;
-use htc::{client::HTCClient, regions::CrousRegion};
+use htc::scheduler::{ExecutionResult, SchedulableAction};
+use htc::client::HTCClient;
 
-use crate::actions::{Executable, ExecutionResult};
 use htc::config::{ConfigError, CronConfig};
 
 use super::{meals::MealsAction, restaurants::RestaurantsAction};
@@ -24,11 +22,8 @@ impl ScheduleAction {
         let mut meals = Vec::new();
         if let Some(restaurants_config) = cron.restaurants {
             for target in restaurants_config.target {
-                let region: CrousRegion = target
-                    .parse()
-                    .map_err(|_| ConfigError::UnknownRegion(target))?;
-                println!("Scheduling restaurant crawl job for {}", region);
-                let action = RestaurantsAction::new(region, false, client.clone());
+                println!("Scheduling restaurant crawl job for {}", target);
+                let action = RestaurantsAction::new(target, false, client.clone());
                 restaurants.push(Arc::new(SchedulableAction::new(
                     action,
                     restaurants_config.schedule.clone(),
@@ -38,11 +33,8 @@ impl ScheduleAction {
 
         if let Some(meals_config) = cron.meals {
             for target in meals_config.target {
-                let region: CrousRegion = target
-                    .parse()
-                    .map_err(|_| ConfigError::UnknownRegion(target))?;
-                println!("Scheduling meals crawl job for {}", region);
-                let action = MealsAction::new(region, false, client.clone());
+                println!("Scheduling meals crawl job for {}", target);
+                let action = MealsAction::new(target, false, client.clone());
                 meals.push(Arc::new(SchedulableAction::new(
                     action,
                     meals_config.schedule.clone(),
@@ -70,41 +62,5 @@ impl ScheduleAction {
 
         let _ = join_all(handles).await;
         Ok(())
-    }
-}
-
-pub struct SchedulableAction<A>
-where
-    A: Executable,
-{
-    executable: A,
-    schedule: String,
-}
-
-impl<A> SchedulableAction<A>
-where
-    A: Executable,
-{
-    pub fn new(executable: A, schedule: String) -> Self {
-        Self {
-            executable,
-            schedule,
-        }
-    }
-    pub async fn schedule(&self) -> Result<(), ExecutionResult> {
-        loop {
-            let now = Utc::now();
-            let next = parse(&self.schedule, &now)
-                .map_err(|e| ExecutionResult::Failure(format!("Invalid cron expression: {e}")))?;
-            let delay = next - now;
-            println!("Next schedule in {}", delay);
-            if let Ok(std_duration) = delay.to_std() {
-                tokio::select! {
-                    _ = tokio::time::sleep(std_duration) => {}
-                    _ = tokio::signal::ctrl_c() => { return Ok(()); }
-                }
-            }
-            self.executable.execute().await?;
-        }
     }
 }

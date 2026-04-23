@@ -5,10 +5,7 @@ use std::sync::{
 
 use futures::future::join_all;
 use htc::{
-    client::HTCClient,
-    models::{meals::MealSchema, restaurants::RestaurantSchema},
-    regions::CrousRegion,
-    sources::meals::RestaurantPageScrapedData,
+    client::HTCClient, models::{meals::MealSchema, restaurants::RestaurantSchema}, regions::CrousRegion, scheduler::{Executable, ExecutionResult}, sources::meals::RestaurantPageScrapedData
 };
 use crawler::{Scraper, restaurant_page::RestaurantPageScraper};
 use rattles::presets::prelude as presets;
@@ -18,7 +15,6 @@ use tabled::{
 };
 use thiserror::Error;
 
-use crate::actions::{Executable, ExecutionResult};
 
 pub struct MealsAction {
     pub target: CrousRegion,

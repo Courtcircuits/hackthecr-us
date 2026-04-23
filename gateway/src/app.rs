@@ -1,24 +1,36 @@
 use std::sync::Arc;
-use htc::orders::Order;
-use tracing::error;
+use std::time::Duration;
 
+use htc::{
+    buffet::ScrapingResult,
+    models::{meals::MealSchema, restaurants::RestaurantSchema},
+    orders::Order,
+    verifiable::SignedPayload,
+};
 use r2d2::Pool;
+use rdkafka::config::ClientConfig;
+use rdkafka::producer::{FutureProducer, FutureRecord};
+use tracing::error;
 
 use crate::http::ApiError;
 
 #[derive(Clone)]
 pub struct App {
     pub redis_pool: Arc<Pool<redis::Client>>,
+    pub producer: FutureProducer,
 }
 
-
 impl App {
-    pub fn new(redis_pool: Arc<Pool<redis::Client>>) -> Self {
-        Self { redis_pool }
+    pub fn new(redis_pool: Arc<Pool<redis::Client>>, broker: &str) -> Self {
+        let producer: FutureProducer = ClientConfig::new()
+            .set("bootstrap.servers", broker)
+            .set("message.timeout.ms", "5000")
+            .create()
+            .expect("Failed to create Kafka producer");
+        Self { redis_pool, producer }
     }
 
     pub async fn poll_job(&self) -> Result<Option<Order>, ApiError> {
-
         let pool = self.redis_pool.clone();
 
         let job_str: Option<String> = tokio::task::spawn_blocking(move || {
@@ -40,7 +52,6 @@ impl App {
             if result == Some(0) {
                 return Ok(None);
             }
-
 
             let result: Option<(String, String)> = redis::cmd("BLPOP")
                 .arg("job_queue")
@@ -66,5 +77,52 @@ impl App {
         } else {
             Ok(None)
         }
+    }
+
+    pub async fn produce_meals(
+        &self,
+        payload: SignedPayload<ScrapingResult<Vec<MealSchema>>>,
+    ) -> Result<(), ApiError> {
+        let payload_json = serde_json::to_string(&payload).map_err(|e| {
+            ApiError::InternalServerError(format!("Failed to serialize meals payload: {}", e))
+        })?;
+
+        self.producer
+            .send(
+                FutureRecord::to("meals").payload(&payload_json).key(""),
+                Duration::from_secs(5),
+            )
+            .await
+            .map_err(|(e, _)| {
+                error!("Failed to produce meals message: {}", e);
+                ApiError::InternalServerError(format!("Failed to forward meals to Kafka: {}", e))
+            })?;
+
+        Ok(())
+    }
+
+    pub async fn produce_restaurants(
+        &self,
+        payload: SignedPayload<ScrapingResult<Vec<RestaurantSchema>>>,
+    ) -> Result<(), ApiError> {
+        let payload_json = serde_json::to_string(&payload).map_err(|e| {
+            ApiError::InternalServerError(format!("Failed to serialize restaurants payload: {}", e))
+        })?;
+
+        self.producer
+            .send(
+                FutureRecord::to("restaurants").payload(&payload_json).key(""),
+                Duration::from_secs(5),
+            )
+            .await
+            .map_err(|(e, _)| {
+                error!("Failed to produce restaurants message: {}", e);
+                ApiError::InternalServerError(format!(
+                    "Failed to forward restaurants to Kafka: {}",
+                    e
+                ))
+            })?;
+
+        Ok(())
     }
 }

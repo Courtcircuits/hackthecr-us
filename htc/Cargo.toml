@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1", features = ["serde"] }
+chrono.workspace = true
+uuid = { version = "1", features = ["serde", "v4"] }
 serde.workspace = true
 serde_json.workspace = true
 sqlx.workspace = true
@@ -22,3 +22,5 @@ reqwest.workspace = true
 tracing.workspace = true
 clap.workspace = true
 serde_yaml = "0.9.34"
+cron-parser.workspace = true
+tokio.workspace = true

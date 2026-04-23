@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use utoipa::ToSchema;
+
 pub mod admins;
 pub mod keywords;
 pub mod meals;
@@ -7,8 +9,8 @@ pub mod restaurants;
 pub mod schools;
 pub mod scrape_batch;
 
-#[derive(Clone, serde::Serialize, serde::Deserialize, Debug)]
-#[serde(try_from = "String")]
+#[derive(Clone, serde::Serialize, serde::Deserialize, Debug, ToSchema)]
+#[serde(try_from = "String", into = "String")]
 pub enum Entity {
     Restaurants,
     Meals(String),
@@ -53,5 +55,11 @@ impl ToString for Entity {
             Entity::Meals(restaurant_id) => format!("meals-{}", restaurant_id),
             Entity::Schools => "schools".to_string(),
         }
+    }
+}
+
+impl From<Entity> for String {
+    fn from(e: Entity) -> Self {
+        e.to_string()
     }
 }

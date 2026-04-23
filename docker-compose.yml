@@ -65,8 +65,6 @@ services:
       - ZOO_AUTOPURGE_INTERVAL=1
       - ZOO_ENABLE_PROMETHEUS_METRICS=yes
       - ZOO_PROMETHEUS_METRICS_PORT_NUMBER=9141
-    profiles:
-      - debug
   clickhouse:
     !!merge <<: *clickhouse-defaults
     container_name: signoz-clickhouse
@@ -77,8 +75,6 @@ services:
     volumes:
       - ./clickhouse-cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
       - clickhouse:/var/lib/clickhouse/
-    profiles:
-      - debug
   signoz:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.117.1}

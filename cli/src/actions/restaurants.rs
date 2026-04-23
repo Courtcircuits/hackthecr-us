@@ -5,10 +5,7 @@ use std::sync::{
 
 use futures::future::join_all;
 use htc::{
-    client::HTCClient,
-    models::restaurants::RestaurantSchema,
-    regions::{CrousRegion, CrousUrl},
-    sources::restaurants::RestaurantScrapedData,
+    client::HTCClient, models::restaurants::RestaurantSchema, regions::{CrousRegion, CrousUrl}, scheduler::{Executable, ExecutionResult}, sources::restaurants::RestaurantScrapedData
 };
 use crawler::{
     Scraper, restaurant_list::RestaurantListScraper, restaurant_page::RestaurantPageScraper,
@@ -19,7 +16,6 @@ use tabled::{
     settings::{Alignment, Style, object::Columns},
 };
 
-use crate::actions::{Executable, ExecutionResult};
 
 pub struct RestaurantsAction {
     pub target: CrousRegion,

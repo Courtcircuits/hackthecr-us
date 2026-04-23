@@ -10,7 +10,19 @@ redis.workspace = true
 thiserror.workspace = true
 r2d2.workspace = true
 htc = { package = "htc", path = "../htc" }
+uuid = { version = "1", features = ["v4", "serde"] }
 tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-clickhouse-rs = "0.1.21"
+clickhouse = { version = "0.13", features = ["uuid"] }
+futures.workspace = true
+clap.workspace = true
+dotenv.workspace = true
+opentelemetry-semantic-conventions.workspace = true
+tracing-opentelemetry.workspace = true
+tracing-subscriber.workspace = true
+opentelemetry.workspace = true
+opentelemetry_sdk.workspace = true
+opentelemetry-otlp.workspace = true
+tracing.workspace = true
+rdkafka.workspace = true

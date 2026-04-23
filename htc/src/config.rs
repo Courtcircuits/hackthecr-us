@@ -2,11 +2,12 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{cert::generate_ed25519_pem};
+use crate::{cert::generate_ed25519_pem, regions::CrousRegion};
 
 use clap::ValueEnum;
 
 const DEFAULT_API: &str = "https://api.hackthecrous.com";
+const DEFAULT_BUFFET_API: &str = "https://buffet.hackthecrous.com";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, ValueEnum)]
 pub enum OutputFormat {
@@ -15,10 +16,10 @@ pub enum OutputFormat {
 }
 
 
-
 #[derive(Serialize, Deserialize)]
-pub struct Config {
+pub struct HTCConfig {
     pub server: String,
+    pub buffet_server: Option<String>,
     pub client_key_data: String,
     pub public_key_data: String,
     pub user: String,
@@ -35,7 +36,7 @@ pub struct CronConfig {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EntityScheduleConfig {
     pub schedule: String,
-    pub target: Vec<String>,
+    pub target: Vec<CrousRegion>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -54,15 +55,16 @@ pub enum ConfigError<'a> {
     UnknownRegion(String),
 }
 
-impl Config {
+impl HTCConfig {
     pub fn from(path: &PathBuf) -> Result<Self, ConfigError<'_>> {
         let config = std::fs::read_to_string(path).map_err(|_| ConfigError::NotFound(path))?;
         if config.is_empty() {
             return Err(ConfigError::EmptyFile);
         }
-        let deserialized_config: Config =
+        let deserialized_config: HTCConfig =
             serde_yaml::from_str(&config).map_err(|e| ConfigError::InvalidYAML(e.to_string()))?;
-        Ok(Config {
+        Ok(HTCConfig {
+            buffet_server: deserialized_config.buffet_server,
             server: deserialized_config.server,
             client_key_data: deserialized_config.client_key_data,
             public_key_data: deserialized_config.public_key_data,
@@ -75,7 +77,8 @@ impl Config {
         let certificates =
             generate_ed25519_pem().map_err(|e| ConfigError::CertificateGenFailed(e.to_string()))?;
 
-        Ok(Config {
+        Ok(HTCConfig {
+            buffet_server: Some(DEFAULT_BUFFET_API.to_string()),
             server: server_name.unwrap_or(DEFAULT_API).to_string(),
             client_key_data: certificates.private_key,
             public_key_data: certificates.certificate,

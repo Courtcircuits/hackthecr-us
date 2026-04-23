@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use htc::orders::Order;
 use r2d2::Pool;
+use tracing::info;
 
 
 #[derive(Clone)]
@@ -20,6 +21,7 @@ impl OrderQueue {
 
         tokio::task::spawn_blocking(move || {
             let mut conn = pool.get().map_err(|e| format!("Failed to get Redis connection: {}", e))?;
+            info!("Enqueuing job for region {} in Redis", order_json);
             redis::cmd("RPUSH")
                 .arg("job_queue")
                 .arg(order_json)
