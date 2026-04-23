@@ -29,8 +29,9 @@ reqwest = { version = "0.12.5", features = ["native-tls-vendored", "json"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "tracing-log"] }
 unicode-normalization = "0.1"
-redis = { version = "1.2.0", features = ["r2d2"] }
+redis = { version = "1.2.0", features = ["r2d2", "aio", "tokio-comp"] }
 axum = { version = "0.8.8", features = ["query"] }
 dotenv = { version = "0.15.0", features = ["clap"] }
 tower-http = { version = "0.6.8", features = ["cors", "trace"] }
 rdkafka = { version = "0.25", features = ["dynamic-linking"] }
+r2d2 = "0.8.10"

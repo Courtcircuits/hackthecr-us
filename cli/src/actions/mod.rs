@@ -2,7 +2,6 @@ use std::{future::Future, pin::Pin};
 
 use thiserror::Error;
 
-pub mod config_gen;
 pub mod meals;
 pub mod restaurants;
 pub mod schedule;

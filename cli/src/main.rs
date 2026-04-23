@@ -1,18 +1,16 @@
 use std::{path::PathBuf, process::exit};
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 use color_print::cprintln;
-use htc::{client::HTCClient, regions::CrousRegion};
+use htc::{client::HTCClient, config::{Config, CronConfig, EntityScheduleConfig, OutputFormat}, regions::CrousRegion};
 
 use crate::{
     actions::{
         Executable, meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
     },
-    config::{Config, CronConfig, EntityScheduleConfig},
 };
 
 pub mod actions;
-pub mod config;
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -25,12 +23,6 @@ struct Crousctl {
     pub command: Command,
     #[clap(long, short = 'c')]
     pub config: Option<PathBuf>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, ValueEnum)]
-pub enum OutputFormat {
-    Yaml,
-    KubernetesSecret,
 }
 
 #[derive(Debug, Subcommand, PartialEq, Eq, Hash)]

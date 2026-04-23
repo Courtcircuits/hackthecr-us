@@ -5,10 +5,8 @@ use cron_parser::parse;
 use futures::future::join_all;
 use htc::{client::HTCClient, regions::CrousRegion};
 
-use crate::{
-    actions::{Executable, ExecutionResult},
-    config::{ConfigError, CronConfig},
-};
+use crate::actions::{Executable, ExecutionResult};
+use htc::config::{ConfigError, CronConfig};
 
 use super::{meals::MealsAction, restaurants::RestaurantsAction};
 

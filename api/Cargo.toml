@@ -8,8 +8,8 @@ license.workspace = true
 [dependencies]
 axum.workspace = true
 dotenv.workspace = true
-utoipa = "5.4.0"
-utoipa-scalar = { version = "0.3.0", features = ["axum"] }
+utoipa.workspace = true
+utoipa-scalar.workspace = true
 htc = { package = "htc", path = "../htc" }
 tower-http.workspace = true
 reqwest = { version = "0.12.5", features = ["native-tls-vendored"] }

@@ -2,9 +2,19 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{actions::config_gen::generate_ed25519_pem, OutputFormat};
+use crate::{cert::generate_ed25519_pem};
+
+use clap::ValueEnum;
 
 const DEFAULT_API: &str = "https://api.hackthecrous.com";
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, ValueEnum)]
+pub enum OutputFormat {
+    Yaml,
+    KubernetesSecret,
+}
+
+
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {

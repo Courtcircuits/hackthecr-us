@@ -4,7 +4,7 @@ use clap::Parser;
 #[clap(name = "gateway", version, about = "Gateway for the buffet")]
 pub struct Config {
     /// Port to listen on
-    #[clap(long, env = "GATEWAY_PORT", default_value = "8080")]
+    #[clap(long, env = "GATEWAY_PORT", default_value = "3002")]
     pub port: u16,
 
     /// Allowed CORS origins (comma-separated, use '*' for all)

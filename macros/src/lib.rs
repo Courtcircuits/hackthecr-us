@@ -126,6 +126,25 @@ pub fn generate_crous_enum(input: TokenStream) -> TokenStream {
                 s.parse()
             }
         }
+
+        impl ::serde::Serialize for CrousRegion {
+            fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                serializer.serialize_str(&self.to_string())
+            }
+        }
+
+        impl<'de> ::serde::Deserialize<'de> for CrousRegion {
+            fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
+            where
+                D: ::serde::Deserializer<'de>,
+            {
+                let s = <::std::string::String as ::serde::Deserialize>::deserialize(deserializer)?;
+                s.parse::<CrousRegion>().map_err(::serde::de::Error::custom)
+            }
+        }
     }
     .into()
 }

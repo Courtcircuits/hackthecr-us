@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use axum::{
     Router,
-    http::{HeaderValue, Method, header},
+    http::{HeaderValue, Method, StatusCode, header},
+    response::{IntoResponse, Response},
 };
 use tokio::{net::TcpListener, task::JoinHandle};
 use tower_http::cors::CorsLayer;
@@ -14,8 +15,20 @@ use crate::config::Config;
 pub enum ApiError {
     #[error("Internal server error: {0}")]
     InternalServerError(String),
+    #[error("Not found: {0}")]
+    NotFound(String),
 }
 
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status, body) = match self {
+            ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+        };
+        (status, body).into_response()
+    }
+}
 
 pub async fn serve(app: Router, config: Arc<Config>) -> Result<JoinHandle<()>, ApiError> {
     let listener = TcpListener::bind(format!("0.0.0.0:{}", config.port))

@@ -6,3 +6,11 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
+redis.workspace = true
+thiserror.workspace = true
+r2d2.workspace = true
+htc = { package = "htc", path = "../htc" }
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+clickhouse-rs = "0.1.21"
