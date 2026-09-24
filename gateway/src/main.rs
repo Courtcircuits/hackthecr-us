@@ -11,8 +11,6 @@ mod http;
 mod tracing;
 mod app;
 mod jobs;
-mod meals;
-mod restaurants;
 mod router;
 
 #[tokio::main]
@@ -24,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let redis_client = redis::Client::open(config.redis_url.clone())?;
     let redis_pool = Arc::new(Pool::builder().build(redis_client)?);
 
-    let app_state = App::new(redis_pool, &config.consumer_endpoint);
+    let app_state = App::new(redis_pool);
     let router = router::root(app_state, &config.cors_origins)
         .inspect_err(|e| error!("Failed to build router: {}", e))?;
 

@@ -2,16 +2,12 @@ use std::{path::PathBuf, process::exit};
 
 use clap::{Parser, Subcommand};
 use color_print::cprintln;
-use htc::{
-    buffet::BuffetClient,
-    client::HTCClient,
-    config::{CronConfig, EntityScheduleConfig, HTCConfig, OutputFormat},
-    regions::CrousRegion,
-    scheduler::Executable,
-};
+use htc::{client::HTCClient, config::{Config, CronConfig, EntityScheduleConfig, OutputFormat}, regions::CrousRegion};
 
-use crate::actions::{
-    meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
+use crate::{
+    actions::{
+        Executable, meals::MealsAction, restaurants::RestaurantsAction, schedule::ScheduleAction,
+    },
 };
 
 pub mod actions;
@@ -51,7 +47,6 @@ pub enum Command {
         dry_run: bool,
     },
     Schedule {},
-    Listen {},
     Generate {
         #[clap(long, short = 'u')]
         user: String,
@@ -101,38 +96,19 @@ async fn main() {
         schools_targets,
     } = args.command
     {
-        let parse_targets = |targets: Vec<String>| -> Vec<CrousRegion> {
-            targets
-                .into_iter()
-                .map(|t| {
-                    t.parse::<CrousRegion>().unwrap_or_else(|e| {
-                        cprintln!("💣 <red>Invalid region: {}</red>", e);
-                        exit(1);
-                    })
-                })
-                .collect()
+        let build_entity = |schedule: Option<String>, targets: Vec<String>| {
+            schedule.map(|s| EntityScheduleConfig { schedule: s, target: targets })
         };
-        let build_entity = |schedule: Option<String>, targets: Vec<CrousRegion>| {
-            schedule.map(|s| EntityScheduleConfig {
-                schedule: s,
-                target: targets,
-            })
-        };
-        let restaurants = build_entity(restaurants_schedule, parse_targets(restaurants_targets));
-        let meals = build_entity(meals_schedule, parse_targets(meals_targets));
-        let schools = build_entity(schools_schedule, parse_targets(schools_targets));
+        let restaurants = build_entity(restaurants_schedule, restaurants_targets);
+        let meals = build_entity(meals_schedule, meals_targets);
+        let schools = build_entity(schools_schedule, schools_targets);
         let schedule = if restaurants.is_some() || meals.is_some() || schools.is_some() {
-            Some(CronConfig {
-                restaurants,
-                meals,
-                schools,
-            })
+            Some(CronConfig { restaurants, meals, schools })
         } else {
             None
         };
 
-        let new_config = HTCConfig::generate(&user, server_name.as_deref(), schedule)
-            .expect("Couldn't generate config");
+        let new_config = Config::generate(&user, server_name.as_deref(), schedule).expect("Couldn't generate config");
         if dry_run {
             new_config
                 .print(output.unwrap_or(OutputFormat::Yaml), secret_name.as_deref())
@@ -149,18 +125,13 @@ async fn main() {
         return;
     }
 
-    let Ok(config) = HTCConfig::from(&config_path) else {
+    let Ok(config) = Config::from(&config_path) else {
         cprintln!("💣 <red>Config not found</red>");
         exit(0)
     };
 
     let cron_config = config.schedule;
-
-    let client = HTCClient::new(
-        config.server,
-        config.client_key_data.clone(),
-        config.user.clone(),
-    );
+    let client = HTCClient::new(config.server, config.client_key_data, config.user);
 
     match args.command {
         Command::Status => {
@@ -197,28 +168,6 @@ async fn main() {
                 "Schools command is not implemented yet. Target: {}, Dry run: {}",
                 target, dry_run
             );
-        }
-        Command::Listen {} => {
-            if let Some(buffet_server) = config.buffet_server {
-                let buffet_client = BuffetClient::new(
-                    buffet_server,
-                    config.client_key_data.clone(),
-                    config.user.clone(),
-                );
-                let action = actions::listen::ListenAction::new(buffet_client, client.clone());
-
-                match action.run().await {
-                    Ok(()) => {
-                        cprintln!("✅ <green>Listen action completed successfully.</green>");
-                    }
-                    Err(e) => {
-                        cprintln!("💣 <red>Listen action failed: {}</red>", e);
-                    }
-                }
-            } else {
-                cprintln!("💣 <red>No buffet server configured</red>");
-                return;
-            }
         }
         Command::Schedule {} => match cron_config {
             Some(config) => {
